@@ -13,14 +13,14 @@ const headers ={
 
 
 const repos = (api_url + "/search/repositories?q=stars:>=2000+created:");
-const repos_names = fs.createWriteStream('repo_more_2000_stars_names_1anno.txt');
+const repos_names = fs.createWriteStream('repo_more_2000_stars_from2017.txt');
 var ranges = []
 var number_of_pages
 
 //main function, reading from date_ranges file, and passing each range to the getRepos function
 function main(url){
 
-    var instream = fs.createReadStream('date_ranges.txt');
+    var instream = fs.createReadStream('date_ranges_2000.txt');
     var outstream = new stream;
     var rl = readline.createInterface(instream, outstream);
     console.log("start")
@@ -39,7 +39,7 @@ function main(url){
 
 //function to load all the pages (max 10), and writing the names of the found repos in "repo_names.txt" 
 async function loadMore(pages, url) {
-console.log("ciao");
+//console.log("ciao");
     for ( let i = 1; i < pages +1; i++ ) {
         const response = await fetch( url + '&page=' + i, {
             "method" : "GET",

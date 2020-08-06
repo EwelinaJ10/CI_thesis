@@ -12,15 +12,15 @@ const headers ={
 }
 
 
-const repos = (api_url + "/search/repositories?q=stars:>=2000+created:");
-const repos_names = fs.createWriteStream('repo_more_2000_stars_from2017.txt');
+const repos = (api_url + "/search/repositories?q=stars:>100+created:");
+const repos_names = fs.createWriteStream('repos_100stars_2018-2020.txt');
 var ranges = []
 var number_of_pages
 
 //main function, reading from date_ranges file, and passing each range to the getRepos function
 function main(url){
 
-    var instream = fs.createReadStream('date_ranges_2000.txt');
+    var instream = fs.createReadStream('date_ranges_100stars.txt');
     var outstream = new stream;
     var rl = readline.createInterface(instream, outstream);
     console.log("start")

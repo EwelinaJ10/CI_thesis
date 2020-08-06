@@ -8,31 +8,26 @@ const fetch = require("node-fetch");
 const api_url = "https://api.github.com";
 
 var number_of_pages
-var total_yamls
-//const travis_paths = fs.createWriteStream('travis_paths.txt');
-//const repos_with_travis = fs.createWriteStream('repos_with_travis.txt');
 const repos_names = []
 
 const headers ={
     "Authorization" : 'Token d74b7a6d1d63d0888b78ba68a7b2f00ed57bb590'
 }
-const yaml_paths = fs.createWriteStream('yaml_paths.txt');
-const repos_with_yaml = fs.createWriteStream('repos_with_yaml.txt');
-
-//const circle_paths = fs.createWriteStream('circle_paths.txt');
-//const repos_with_circle = fs.createWriteStream('repos_with_circle.txt');
-
-//const appveyor_paths = fs.createWriteStream('appveyor_paths.txt');
-//const repos_with_appveyor = fs.createWriteStream('repos_with_appveyor.txt');
-//const yaml_circle = (api_url + "/search/code?q=language+script+language:yaml+extension:yml+travis in:name+repo:");
+//si riferisce al data ranges da 2018 a 2020, progetti con più di 100 stelle
+const yaml_paths = fs.createWriteStream('yaml_paths_2018-2020_100stars.txt');
+const repos_with_yaml = fs.createWriteStream('repos_with_yaml_2018-2020__100stars.txt');
+const repos_with_travis = fs.createWriteStream('repos_with_travis.txt');
+const repos_with_circle = fs.createWriteStream('repos_with_circle.txt');
+const repos_with_github = fs.createWriteStream('repos_with_github.txt');
+const repos_with_appveyor = fs.createWriteStream('repos_with_appveyor.txt');
+const repos_with_wercker = fs.createWriteStream('repos_with_wercker.txt');
 const yaml = (api_url + "/search/code?q=language:yaml+extension:yml+repo:");
-const yaml_github = (api_url + "/search/code?q=jobs+name+on+language:yaml+extension:yml+.github/workflows+in:url+repo:");
-//const yaml_appveyor = (api_url + "/search/code?q=build+language:yaml+extension:yml+appveyor in:name+repo:");
-const yaml_wercker = (api_url + "/search/code?q=build+script+steps+language:yaml+extension:yml+wercker in:name+repo:");
-//main function, reading from repo_names file, and passing each range to the getYamls function
-function main(url, file_paths, file_repo){
 
-    var instream = fs.createReadStream('repo_more_2000_stars_from2017.txt');
+
+//main function, reading from repo_names file, and passing each range to the getYamls function
+function main(url){
+
+    var instream = fs.createReadStream('repos_100stars_2018-2020.txt');
     var outstream = new stream;
     var rl = readline.createInterface(instream, outstream);
     rl.on('line', function(line) {
@@ -42,12 +37,12 @@ function main(url, file_paths, file_repo){
 
         for(let i = 0; i<repos_names.length; i++){
             console.log(i)
-            await getYamls(repos_names[i], url, file_paths, file_repo)
+            await getYamls(repos_names[i], url)
         }
     });       
 }
 //function querying repos for the yaml files 
-async function getYamls(line, url, file_paths, file_repo){
+async function getYamls(line, url){
 
     var yaml_url = url + line + "&per_page=100"
     const yaml_response = await fetch(yaml_url,{
@@ -62,12 +57,12 @@ async function getYamls(line, url, file_paths, file_repo){
 
         if(number_of_pages>0){
            
-            file_repo.write(`${line} \n`)
+            repos_with_yaml.write(`${line} \n`)
               
             if(number_of_pages>10){
                 number_of_pages = 10
             }
-            await loadMore(number_of_pages, yaml_url, file_paths)
+            await loadMore(number_of_pages, yaml_url, line)
             }  
         })
         .catch(function(err) {
@@ -75,7 +70,7 @@ async function getYamls(line, url, file_paths, file_repo){
         });
 }
 //function to load all the pages (max 10), and writing the download urls of the found yaml files in "yamls_paths.txt" 
-async function loadMore(pages, url,file_paths) {
+async function loadMore(pages, url, line) {
     
     for ( let i = 1; i < pages +1; i++ ) {
         await fetch( url + '&page=' + i, {
@@ -95,13 +90,64 @@ async function loadMore(pages, url,file_paths) {
                  
                     let url_result = await url_response.json()
                     let yaml_file_download_url = url_result.download_url;
+                    if(yaml_file_download_url.includes(".travis.yml")){
                     try{
-                        file_paths.write(`${yaml_file_download_url}\n`) 
+                        yaml_paths.write(`${yaml_file_download_url}\n`) 
+                        repos_with_travis.write((`${line} \n`))
                     }
                     catch(e){
                         console.log(e)
-                    }
                    
+                        }
+                    
+                    }
+                    else if(yaml_file_download_url.includes(".github/workflows")){
+                        try{
+                            yaml_paths.write(`${yaml_file_download_url}\n`) 
+                            repos_with_github.write((`${line} \n`))
+                        }
+                        catch(e){
+                            console.log(e)
+                       
+                            }
+                        
+                        }
+                        else if(yaml_file_download_url.includes("appveyor")){
+                            try{
+                                yaml_paths.write(`${yaml_file_download_url}\n`) 
+                                repos_with_appveyor.write((`${line} \n`))
+                            }
+                            catch(e){
+                                console.log(e)
+                           
+                                }
+                            
+                            }
+                            else if(yaml_file_download_url.includes("wercker")){
+                                try{
+                                    yaml_paths.write(`${yaml_file_download_url}\n`) 
+                                    repos_with_wercker.write((`${line} \n`))
+                                }
+                                catch(e){
+                                    console.log(e)
+                               
+                                    }
+                                
+                                }
+                                else if(yaml_file_download_url.includes(".circleci/config.yml")){
+                                    try{
+                                        yaml_paths.write(`${yaml_file_download_url}\n`) 
+                                        repos_with_circle.write((`${line} \n`))
+                                    }
+                                    catch(e){
+                                        console.log(e)
+                                   
+                                        }
+                                    
+                                    }
+                    
+                       
+                     
                 })               
             })
             .catch(function(err) {
@@ -111,4 +157,4 @@ async function loadMore(pages, url,file_paths) {
     }
 }
 
-main(yaml, yaml_paths, repos_with_yaml)
+main(yaml)

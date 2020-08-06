@@ -6,7 +6,7 @@ const readline = require('readline');
 const stream = require('stream');
 const axios = require('axios');
 
-var instream = fs.createReadStream('yaml_paths_2018-2020_100stars_5.txt');
+var instream = fs.createReadStream('yaml_paths_2018-2020_100stars.txt');
 var outstream = new stream;
 var urls = []
 const directory_yamls = './yamls/';

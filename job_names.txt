@@ -1,4 +1,4 @@
-build 		"CONTA.SE(A1:A1412; ""build"")"
+build 		
 build 		
 build 		
 build 		

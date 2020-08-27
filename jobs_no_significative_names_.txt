@@ -1,0 +1,425 @@
+other,  greeting,   -,   1005_greetings.yml 
+other,  cancel-previous,   -,   1055_benches.yml 
+other,  cancel-previous,   Cancel redundant jobs,   1056_tests.yml 
+other,  tweet,   -,   105_tweet_issues.yml 
+other,  cancel-previous,   Cancel redundant jobs,   1062_lints.yml 
+other,  xenial-5-2,   -,   1080_swift.yml 
+other,  bionic-5-2,   -,   1080_swift.yml 
+other,  thread,   -,   1080_swift.yml 
+other,  address,   -,   1080_swift.yml 
+other,  homebrew,   Bump Dolt Homebrew formula,   1096_bump-brew-formula.yml 
+other,  Windows,   -,   1104_ci.yml 
+other,  botproject,   BotProject,   1118_main.yml 
+other,  conventional-pr,   Conventional PR,   1119_validate-pr.yml 
+other,  all,   ${{ matrix.config.os }} (${{ matrix.config.r }}),   1130_main.yml 
+other,  greeting,   -,   1130_OpenXR-SDK-readonly.yml 
+language,  pypi,   -,   1133_main.yml 
+other,  cross,   Cross compile,   1146_ci.yml 
+other,  min-supported,   -,   1153_ci-workflow.yml 
+other,  drive,   -,   1153_flutter-drive-ios.yml 
+other,  drive_android,   -,   1156_flutter-drive-android.yml 
+other,  clippy,   clippy,   1169_ci.yml 
+language,  rustfmt,   rustfmt,   1169_ci.yml 
+language,  rustdoc,   rustdoc,   1169_ci.yml 
+other,  ci-success,   ci,   1169_ci.yml 
+other,  ci-failure,   ci,   1169_ci.yml 
+other,  analyse,   Analyse,   1179_codeql-analysis.yml 
+other,  performance,   -,   1179_release.yml 
+other,  clippy,   -,   1180_ci.yml 
+other,  upload,   Upload,   1182_release.yml 
+other,  main,   -,   1186_data.yml 
+other,  main,   -,   1187_build.yml 
+other,  Sync-Deb-Prod,   Sync Deb Artifacts to Prod,   1199_release-sync-deb.yml 
+other,  Sync-Windows-Prod,   -,   1200_release-sync-windows.yml 
+other,  uncommitted,   -,   1200_uncommitted.yml 
+other,  Sync-Tarball-Prod,   -,   1201_release-sync-tar.yml 
+other,  sign-deb-artifacts,   -,   1204_test-build-deb.yml 
+other,  Provision-Runners-RPM,   Provision-Runners-RPM,   1205_check-version-upgrade.yml 
+other,  CleanUp-Runners-RPM,   CleanUp-Runners-RPM,   1205_check-version-upgrade.yml 
+other,  Sync-AMI-Prod,   -,   1207_release-sync-ami.yml 
+other,  signing-artifacts,   Sign Yum,   1211_release-sync-rpm.yml 
+other,  archive,   -,   1212_deploy.yml 
+other,  greeting,   -,   122_greetings.yml 
+other,  unit-cli,   -,   122_main.yml 
+other,  unit-api,   -,   122_main.yml 
+other,  unit-bf,   -,   122_main.yml 
+other,  integration,   -,   122_main.yml 
+other,  lighthouse,   -,   1233_lighthouse.yml 
+other,  assign_one_project,   Assign to New Issues to Triage Project,   1239_new-issues-to-triage-projects.yml 
+other,  tasks,   -,   1239_pull-requests.yml 
+other,  cypress,   -,   123_probe-into-failure.yml 
+language,  conda,   Conda Python ${{matrix.python}} on ${{matrix.platform}},   123_test-suite.yml 
+language,  vanilla,   Vanilla Python ${{matrix.python}} on ${{matrix.platform}},   123_test-suite.yml 
+other,  mindep,   Minimal Supported Dependencies,   123_test-suite.yml 
+other,  breakingChangeDetectionBot,   Breaking change detection bot,   1240_push.yml 
+other,  ndm-daemonset,   -,   1244_pull_request.yml 
+other,  ndm-exporter,   -,   1244_pull_request.yml 
+other,  ndm-operator,   -,   1244_pull_request.yml 
+other,  ndm-daemonset,   -,   1246_build.yml 
+other,  ndm-exporter,   -,   1246_build.yml 
+other,  ndm-operator,   -,   1246_build.yml 
+other,  clippy,   Clippy,   1251_ci.yml 
+other,  fmt,   Rustfmt,   1251_ci.yml 
+other,  altschema,   -,   1252_ci.yml 
+other,  min_version,   MinSRV,   1255_CICD.yml 
+other,  greeting,   -,   1264_greetings.yml 
+other,  success,   Works properly,   1267_test.yml 
+other,  success_no_mention,   Works properly without mention,   1267_test.yml 
+other,  failure,   Works failed,   1267_test.yml 
+other,  cancel,   Works canceled,   1267_test.yml 
+other,  commit,   Include commit data,   1267_test.yml 
+other,  kind,   -,   1268_e2e.yml 
+other,  CompatHelper,   -,   126_CompatHelper.yml 
+operativ sistem,  stack,   stack / ubuntu-latest,   1270_ci.yml 
+operativ sistem,  nix,   nix / ubuntu-latest,   1270_ci.yml 
+tecnology,  npm,   -,   1272_publish.yml 
+other,  source_code,   Source Code,   1273_deploy.yml 
+other,  fmt,   Rustfmt,   1279_ci.yml 
+other,  fmt,   Rustfmt,   1299_rust.yml 
+other,  clippy,   Clippy,   1299_rust.yml 
+other,  TagBot,   -,   129_TagBot.yml 
+other,  fmt,   Rustfmt,   1313_style.yml 
+other,  clippy,   Clippy,   1313_style.yml 
+other,  imports,   Imports,   1315_staticcheck.yml 
+other,  shadow,   Shadow,   1315_staticcheck.yml 
+operativ sistem,  ci,   windows-vs16,   1325_vs16-ci.yml 
+operativ sistem,  ci,   windows-gcc,   1327_mingw-ci.yml 
+operativ sistem,  ci,   windows-gcc,   1329_mingw64-ci.yml 
+operativ sistem,  ci,   windows-vs16,   1330_vs16-clang-ci.yml 
+operativ sistem,  ci,   windows-vs16,   1331_vs16-ninja-ci.yml 
+other,  assignAuthor,   -,   1344_autoassign.yml 
+other,  greeting,   -,   1346_greetings.yml 
+other,  sphinx,   -,   1347_docs.yml 
+other,  black,   -,   1348_format.yml 
+other,  analyse,   Analyse,   134_codeql-analysis.yml 
+other,  cicd,   -,   1360_cicd.yml 
+other,  createPullRequest,   -,   1362_main.yml 
+other,  language-service,   Language Service,   1366_github-actions-language-service.yml 
+other,  vscode-extension,   VS Code Extension,   1367_github-actions-vscode-extension.yml 
+other,  Fuzzing,   -,   1372_main.yml 
+other,  Markdown,   -,   1377_linting.yml 
+language,  YAML,   -,   1377_linting.yml 
+other,  nf-core,   -,   1377_linting.yml 
+other,  downloadOpenApiDocs,   -,   1377_main.yml 
+other,  Chrome,   -,   1381_ci.yml 
+other,  Firefox,   -,   1381_ci.yml 
+other,  default,   -,   1386_chatops.yml 
+other,  fmt,   Rustfmt,   1397_rust.yml 
+other,  clippy,   Clippy,   1397_rust.yml 
+other,  ci,   -,   1410_ci.yml 
+other,  ci,   Continuous Integration on go ${{ matrix.go-version }}/${{ matrix.platform }},   1469_ci.yml 
+other,  cargo-make-integration-sev,   -,   1479_packet.yml 
+other,  cargo-make-integration-sgx1,   -,   1479_packet.yml 
+other,  cargo-make-ci-flow,   -,   1482_cargo.yml 
+other,  main,   -,   1488_on-label.yml 
+other,  main,   -,   1489_locker.yml 
+other,  dependabot-auto-approve,   -,   148_dependabot-auto-approve.yml 
+other,  main,   -,   1490_test-plan-item-validator.yml 
+other,  main,   -,   1491_needs-more-info-closer.yml 
+other,  main,   -,   1492_classifier-trainer.yml 
+other,  ci,   -,   1493_ci.yml 
+other,  main,   -,   1493_commands.yml 
+other,  main,   -,   1494_classifier-runner.yml 
+other,  fmt,   Rustfmt,   1494_rustfmt.yml 
+other,  copy,   -,   1498_update_gh_pages.yml 
+tecnology,  phpunit,   P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }},   1512_tests.yml 
+other,  analyse,   Analyse,   1531_codeql-analysis.yml 
+other,  greeting,   -,   1532_greetings.yml 
+operativ sistem,  win-srv-2019,   -,   1538_ci.yml 
+other,  actions-tagger,   -,   1539_versioning.yml 
+other,  native,   -,   1540_contracts.yml 
+other,  native,   -,   1543_integration.yml 
+other,  nix,   -,   1543_integration.yml 
+other,  stable,   Deno ${{ matrix.deno }} in ${{ matrix.os }},   1561_ci.yml 
+other,  teslamate,   -,   1563_buildx.yml 
+other,  grafana,   -,   1563_buildx.yml 
+other,  diff_shaders,   -,   1566_integration.yml 
+other,  fmt,   Rustfmt,   1572_build.yml 
+other,  clippy,   Clippy,   1572_build.yml 
+other,  main,   -,   1575_E2E.yml 
+other,  storybook,   -,   1577_workflow.yml 
+other,  tagIfNewVersion,   Tag if new version,   157_integrate.yml 
+other,  vint,   -,   1583_ci.yml 
+other,  crates,   -,   1583_ci.yml 
+other,  maple_binary,   -,   1583_ci.yml 
+language,  python_dynamic_module,   -,   1583_ci.yml 
+other,  pkgdown,   -,   1584_pkgdown.yml 
+other,  validation,   Validation,   1605_gradle-wrapper-validation.yml 
+other,  autoclose,   -,   1607_main.yml 
+other,  notebooks,   -,   1621_ci.yml 
+tecnology,  neo4j-notebooks,   -,   1621_ci.yml 
+other,  black,   Format Python,   1621_ci.yml 
+other,  copyright,   -,   1621_ci.yml 
+other,  whitespace,   -,   1621_ci.yml 
+other,  conda,   -,   1621_ci.yml 
+other,  shfmt,   -,   1621_ci.yml 
+other,  all-jobs-passed,   -,   1621_ci.yml 
+other,  puppeteer,   Expo Webpack,   1625_test.yml 
+other,  analyze,   -,   1626_main.yml 
+other,  CompatHelper,   -,   1633_CompatHelper.yml 
+other,  TagBot,   -,   1635_TagBot.yml 
+other,  bats,   -,   1647_post-commit.yml 
+other,  rat,   rat,   1647_post-commit.yml 
+other,  author,   author,   1647_post-commit.yml 
+other,  unit,   unit,   1647_post-commit.yml 
+other,  integration,   integration,   1647_post-commit.yml 
+other,  wct-local,   -,   1655_tests.yml 
+other,  wct-sauce,   -,   1655_tests.yml 
+other,  changelog,   -,   1656_changelog.yml 
+other,  bintray,   -,   1657_publish.yml 
+other,  TagBot,   -,   1664_TagBot.yml 
+other,  combinations,   -,   1672_workflow.yml 
+other,  final,   -,   1672_workflow.yml 
+other,  fmt,   Rustfmt,   1673_ci.yml 
+other,  clippy,   Clippy,   1673_ci.yml 
+other,  level0,   level0,   1681_master.yml 
+other,  caf_foundations,   caf_foundations,   1681_master.yml 
+other,  landingzones,   landingzones,   1681_master.yml 
+other,  caf_foundations_destroy,   caf_foundations_destroy,   1681_master.yml 
+other,  level0_destroy,   level0_destroy,   1681_master.yml 
+other,  level0,   level0,   1682_ci-branches-vnext.yml 
+other,  caf_foundations,   caf_foundations,   1682_ci-branches-vnext.yml 
+other,  landingzones,   landingzones,   1682_ci-branches-vnext.yml 
+other,  caf_foundations_destroy,   caf_foundations_destroy,   1682_ci-branches-vnext.yml 
+other,  level0_destroy,   level0_destroy,   1682_ci-branches-vnext.yml 
+other,  greeting,   -,   16_greetings.yml 
+other,  web,   -,   1707_ci.yml 
+other,  worker,   -,   1707_ci.yml 
+other,  to_gitee,   -,   170_mirror.yml 
+other,  fmt,   Format,   170_rust.yml 
+other,  clippy,   Clippy,   170_rust.yml 
+other,  torch_hub_integration,   -,   1711_github-torch-hub.yml 
+operativ sistem,  jvm,   -,   1731_check.yml 
+operativ sistem,  jvm,   -,   1732_build.yml 
+other,  skunk,   -,   1763_skunk.yml 
+language,  rustdoc,   -,   1790_rustdoc.yml 
+language,  rust,   Rust,   1791_ci.yml 
+other,  default,   -,   1804_build.yml 
+other,  issue_reviver,   -,   1805_issue_reviver.yml 
+other,  homebrew,   Bump Homebrew formula,   1816_publish-deb-brew-pkg.yml 
+other,  stat,   -,   182_check_filename.yml 
+other,  bot,   -,   183_bot.yml 
+other,  stat,   -,   184_check_stat.yml 
+other,  upload,   Upload Artifacts,   186_release.yml 
+other,  ct_ci,   -,   1884_ccpp.yml 
+other,  CompatHelper,   -,   188_CompatHelper.yml 
+other,  skip,   -,   1894_lifecycle_management.yml 
+other,  from-N-1,   Upgrade from Antrea version N-1,   1896_kind_upgrade.yml 
+other,  from-N-2,   Upgrade from Antrea version N-2,   1896_kind_upgrade.yml 
+other,  skip,   -,   1899_clair.yml 
+other,  skip,   -,   1901_update_ovs_image.yml 
+other,  TagBot,   -,   190_TagBot.yml 
+language,  b64_json,   with base64 json creds,   1913_get-secretmanager-secrets-it.yml 
+language,  json,   with json creds,   1913_get-secretmanager-secrets-it.yml 
+language,  b64-json,   with base64 json creds,   1915_appengine-deploy-it.yml 
+language,  json,   with json creds,   1915_appengine-deploy-it.yml 
+language,  b64_json,   with base64 json creds,   1919_upload-cloud-storage-it.yml 
+language,  json,   with json creds,   1919_upload-cloud-storage-it.yml 
+other,  basic,   -,   1928_example-basic.yml 
+operativ sistem,  basic-on-mac,   -,   1928_example-basic.yml 
+other,  osx,   -,   1929_nodejs.yml 
+operativ sistem,  win64,   -,   1929_nodejs.yml 
+other,  e2e,   -,   1930_example-env.yml 
+other,  with-env,   -,   1930_example-env.yml 
+other,  with-action-env,   -,   1930_example-env.yml 
+other,  combined-env,   -,   1930_example-env.yml 
+other,  start,   -,   1931_example-custom-command.yml 
+other,  basic,   -,   1934_example-recording.yml 
+other,  firefox,   -,   1935_example-firefox.yml 
+other,  start,   -,   1936_example-start.yml 
+other,  single,   -,   1938_example-start-and-yarn-workspaces.yml 
+other,  multiple,   -,   1938_example-start-and-yarn-workspaces.yml 
+other,  readmeWorkflow,   Readme Workflow ✨,   1942_main.yml 
+other,  requestManualActivationFile,   Request manual activation file 🔑,   1942_main.yml 
+other,  requestActivation,   Request activation ✔,   1942_main.yml 
+other,  activateAndThenReturnLicense,   returnLicense 🎈,   1942_main.yml 
+language,  rustfmt,   rustfmt,   195_ci.yml 
+other,  greeting,   -,   1962_greetings.yml 
+other,  deleting,   -,   1985_delete-merged-branch.yml 
+other,  greeting,   -,   2001_greetings.yml 
+operativ sistem,  fmt,   Rustfmt / Linux,   2039_ci.yml 
+operativ sistem,  clippy,   Clippy / Linux,   2039_ci.yml 
+other,  cover,   Coverage,   203_ci-go-cover.yml 
+other,  bot,   -,   2042_baiduPush.yml 
+other,  internal-analysis,   Run internal analyzers,   2050_static_analysis.yml 
+other,  sec,   Sec,   2050_static_analysis.yml 
+other,  createPullRequest,   -,   2064_create-release-patch.yml 
+other,  createPullRequest,   -,   2065_create-release-minor.yml 
+other,  ci,   -,   2068_ci.yml 
+other,  version-matrix,   -,   2078_test.yml 
+other,  validation,   Validate Gradle Wrapper,   2140_gradle.yml 
+other,  triage,   -,   2146_labeler.yml 
+other,  coding-standards,   Coding Standards,   214_continuous-integration.yml 
+other,  max-file-size,   -,   2153_valid-files.yml 
+other,  valid-filenames,   -,   2153_valid-files.yml 
+operativ sistem,  example-5-mac,   Ex5 PyPy MacOS,   2185_example-5.yml 
+language,  example-1,   Ex1 (${{ matrix.python-version }},   ${{ matrix.os }})
+operativ sistem,  example-2-mac,   Ex2 Mac,   2187_example-2.yml 
+operativ sistem,  example-2-win,   Ex2 Windows,   2187_example-2.yml 
+operativ sistem,  example-4,   Ex4 Linux,   2188_example-4.yml 
+other,  clippy,   Clippy,   218_build.yml 
+other,  caching-example,   Caching,   2190_caching-example.yml 
+other,  example-6,   Ex6 Mamba,   2191_example-6.yml 
+operativ sistem,  example-3,   Ex3 Linux,   2192_example-3.yml 
+operativ sistem,  example-3-no-name,   Ex3-no-name Linux,   2192_example-3.yml 
+operativ sistem,  iOS,   -,   2300_ci.yml 
+operativ sistem,  tvOS,   -,   2300_ci.yml 
+other,  lighthouse,   -,   2322_ci.yml 
+other,  bashate,   -,   2424_CI.yml 
+other,  shfmt,   -,   2424_CI.yml 
+tecnology,  gradle,   -,   248_pre-merge.yml 
+other,  locales,   -,   24_locales-coverage.yml 
+other,  pack-cli,   -,   253_delivery-archlinux.yml 
+other,  pack-cli-bin,   -,   253_delivery-archlinux.yml 
+other,  validation,   Validation,   263_gradle-wrapper-validation.yml 
+other,  clippy,   clippy,   267_ci.yml 
+language,  rustfmt,   rustfmt,   267_ci.yml 
+language,  rustdoc,   rustdoc,   267_ci.yml 
+other,  ci-success,   ci,   267_ci.yml 
+other,  ci-failure,   ci,   267_ci.yml 
+other,  MacOS,   -,   269_ci.yml 
+other,  examples,   -,   271_build-examples.yml 
+other,  validation,   Validation,   272_gradle-wrapper-validation.yml 
+other,  pack-cli-git,   -,   280_delivery-archlinux-git.yml 
+other,  queues_xenial,   -,   280_test.yml 
+other,  queues_bionic,   -,   280_test.yml 
+other,  merge,   -,   281_release-merge.yml 
+other,  prepare-chocolatey,   -,   285_delivery-chocolatey.yml 
+other,  ci,   -,   288_ci.yml 
+other,  terraform,   -,   288_infrastructure.yml 
+other,  terraform-versions,   Terraform Versions,   294_setup-terraform.yml 
+other,  terraform-versions-no-wrapper,   Terraform Versions No Wrapper,   294_setup-terraform.yml 
+other,  terraform-credentials-cloud,   Terraform Cloud Credentials,   294_setup-terraform.yml 
+other,  terraform-credentials-enterprise,   Terraform Enterprise Credentials,   294_setup-terraform.yml 
+other,  terraform-credentials-none,   Terraform No Credentials,   294_setup-terraform.yml 
+other,  terraform-arguments,   Terraform Arguments,   294_setup-terraform.yml 
+other,  terraform-arguments-no-wrapper,   Terraform Arguments No Wrapper,   294_setup-terraform.yml 
+other,  cli,   CLI Binaries,   2_sqlx.yml 
+other,  sqlite,   SQLite,   2_sqlx.yml 
+other,  postgres,   Postgres,   2_sqlx.yml 
+tecnology,  mysql,   MySQL,   2_sqlx.yml 
+tecnology,  mariadb,   MariaDB,   2_sqlx.yml 
+other,  mssql,   MSSQL,   2_sqlx.yml 
+other,  links-and-fmt,   -,   302_check-crates.yml 
+other,  Jazzy,   -,   302_jazzy.yml 
+other,  validation,   Gradle Wrapper Validation,   303_gradle-wrapper-validation.yml 
+other,  Analyze,   -,   304_swiftlint_analyze.yml 
+other,  greeting,   -,   325_greetings.yml 
+other,  interrogate,   -,   325_interrogate_docs.yml 
+other,  statistics,   -,   338_cron_deploy_pressure_test.yml 
+other,  issue-manager,   -,   341_main.yml 
+other,  contract-java-sdk,   -,   368_ci.yml 
+operativ sistem,  Unix,   ${{ matrix.name }} (${{ matrix.config }}),   375_continuous.yml 
+other,  psalm,   psalm,   386_psalm.yml 
+other,  fmt,   -,   394_test.yml 
+other,  clippy,   Actions - clippy,   400_cargo-test.yml 
+language,  rustfmt,   Actions - rustfmt,   400_cargo-test.yml 
+other,  getchange,   -,   403_pull_request.yml 
+other,  Windows,   -,   433_CI.yml 
+operativ sistem,  Linux,   -,   433_CI.yml 
+operativ sistem,  macOS,   -,   433_CI.yml 
+operativ sistem,  macOS-libretro,   -,   433_CI.yml 
+other,  fmt,   Rustfmt,   436_fmt.yml 
+language,  ruby,   -,   442_ci.yml 
+other,  others,   -,   44_test.yml 
+other,  to_gitee,   -,   458_mirror.yml 
+other,  to_gitee_gh,   -,   458_mirror.yml 
+other,  bowler,   -,   45_build.yml 
+other,  elasticsearch,   Elasticsearch,   491_docker-image-elasticsearch.yml 
+other,  rabbitmq,   RabbitMQ,   492_docker-image-rabbitmq.yml 
+other,  mailhog,   Mailhog,   493_docker-image-mailhog.yml 
+tecnology,  mysql,   MySQL,   494_docker-image-mysql.yml 
+tecnology,  redis,   Redis,   495_docker-image-redis.yml 
+tecnology,  mariadb,   MariaDB,   496_docker-image-mariadb.yml 
+other,  nginx,   Nginx,   497_docker-image-nginx.yml 
+other,  magepack,   Magepack,   498_docker-image-magepack.yml 
+other,  varnish,   Varnish,   499_docker-image-varnish.yml 
+other,  issue-manager,   -,   4_issue-manager.yml 
+tecnology,  php-fpm,   FPM ${{ matrix.php_version }},   500_docker-image-php-fpm.yml 
+tecnology,  magento1,   PHP-FPM ${{ matrix.php_version }} (magento1),   500_docker-image-php-fpm.yml 
+tecnology,  magento2,   PHP-FPM ${{ matrix.php_version }} (magento2),   500_docker-image-php-fpm.yml 
+other,  gen,   Generated Code Integrity,   509_go.yml 
+operativ sistem,  macOS,   macOS,   511_tests.yml 
+operativ sistem,  iOS,   iOS,   511_tests.yml 
+operativ sistem,  tvOS,   tvOS,   511_tests.yml 
+other,  SPM,   SPM,   511_tests.yml 
+other,  Wheel,   -,   518_release.yml 
+other,  AppImage,   -,   518_release.yml 
+other,  Windows,   Windows,   518_release.yml 
+other,  Wheel,   -,   519_continuous.yml 
+other,  AppImage,   -,   519_continuous.yml 
+other,  Windows,   Windows,   519_continuous.yml 
+other,  Label,   -,   521_label.yml 
+operativ sistem,  swiftpm-mac,   -,   530_main.yml 
+other,  module-ami,   Module AMI,   537_terraform-fmt.yml 
+other,  module-bastion,   Module Bastion,   537_terraform-fmt.yml 
+other,  module-internalhost,   Module InternalHost,   537_terraform-fmt.yml 
+other,  module-kubernetes,   Module Kubernetes,   537_terraform-fmt.yml 
+other,  module-networking,   Module Networking,   537_terraform-fmt.yml 
+other,  module-s3storage,   Module S3Storage,   537_terraform-fmt.yml 
+other,  module-securitygroups,   Module SecurityGroups,   537_terraform-fmt.yml 
+other,  module-sshkey,   Module SshKey,   537_terraform-fmt.yml 
+other,  integration,   -,   538_integration.yml 
+other,  federation,   -,   538_integration.yml 
+other,  autoclose,   -,   542_main.yml 
+other,  generic_handler,   Run generic handler,   544_jms-generic-action-handler.yml 
+other,  automerge,   -,   546_automerge.yml 
+other,  aur,   -,   556_aur.yml 
+other,  tag,   Tag Version,   563_master.yml 
+other,  misspell,   -,   586_misspell.yml 
+other,  master,   -,   621_main.yml 
+other,  _,   Automatic Rebase,   630_rebase.yml 
+other,  automate-project-columns,   -,   631_opened-issues-triage.yml 
+other,  determine_necessary_jobs,   Determine necessary jobs,   638_ci-cd.yml 
+language,  download_ruby_sources,   Download Ruby sources,   638_ci-cd.yml 
+other,  download_rbenv_source,   Download Rbenv source,   638_ci-cd.yml 
+other,  create_git_tag,   Create Git tag,   638_ci-cd.yml 
+other,  _,   Automatic Rebase,   641_rebase.yml 
+operativ sistem,  mac,   -,   655_ci.yml 
+operativ sistem,  win,   -,   655_ci.yml 
+language,  rust,   Rust,   663_ci.yml 
+other,  main,   -,   664_lint-pr.yml 
+other,  create-and-upload-assets,   -,   665_release-tauri-app.yml 
+other,  master,   -,   667_publish-starters.yml 
+other,  lighthouse_danger,   -,   677_CI.yml 
+other,  min_version,   MinSRV,   68_CICD.yml 
+other,  triage,   -,   705_pr-labels.yml 
+other,  protos,   Generate protos,   706_proto.yml 
+other,  documentation,   Documentation,   708_release-tag.yml 
+other,  issue-manager,   -,   712_issue-manager.yml 
+other,  floor-annotation,   -,   714_ci.yml 
+other,  floor-generator,   -,   714_ci.yml 
+other,  floor,   -,   714_ci.yml 
+other,  example,   -,   714_ci.yml 
+other,  package-source,   -,   715_tests.yml 
+other,  package-wheel,   -,   715_tests.yml 
+other,  auto-assign,   -,   737_pick-me.yml 
+other,  BINTRAY_UPLOAD,   Bintray Upload,   776_deploy.yml 
+other,  CODE_COVERAGE,   Code Coverage Report,   777_build.yml 
+operativ sistem,  macOS-iOS-tvOS-watchOS,   macOS/iOS/tvOS/watchOS,   791_Tests.yml 
+other,  master,   -,   797_publish.yml 
+tecnology,  phpcs,   -,   858_ci.yml 
+tecnology,  phpunit,   -,   858_ci.yml 
+other,  remove-old-artifacts,   -,   87_remove-old-artifacts.yml 
+other,  _,   Automatic Rebase,   886_rebase.yml 
+other,  _,   Automatic Rebase,   892_rebase.yml 
+other,  package,   -,   899_rotki_ci.yml 
+other,  _,   Automatic Rebase,   900_rebase.yml 
+other,  _,   Automatic Rebase,   902_rebase.yml 
+other,  _,   Automatic Rebase,   907_rebase.yml 
+other,  _,   Automatic Rebase,   908_rebase.yml 
+other,  _,   Automatic Rebase,   914_rebase.yml 
+other,  pkgdown,   -,   918_pkgdown.yml 
+other,  _,   Automatic Rebase,   918_rebase.yml 
+other,  render,   Render README,   919_render-readme.yml 
+other,  _,   Automatic Rebase,   929_rebase.yml 
+other,  make_wheels,   ${{ matrix.os }},   92_wheels.yml 
+other,  _,   Automatic Rebase,   930_rebase.yml 
+other,  greeting,   -,   946_greetings.yml 
+other,  createPullRequest,   -,   954_cpr-example-command.yml 
+other,  package,   -,   955_ci.yml 
+other,  slashCommandDispatch,   -,   956_slash-command-dispatch.yml 
+other,  close_pull_request_job,   Close Pull Request Job,   95_azure-static-web-apps-red-field-08a069f1e.yml 
+other,  applications,   ${{ matrix.app-type }},   969_vuejs.yml 
+other,  close_pull_request_job,   Close Pull Request Job,   98_azure-static-web-apps-victorious-stone-0284aec1e.yml 
+other,  jorje,   -,   992_update_jorje.yml 

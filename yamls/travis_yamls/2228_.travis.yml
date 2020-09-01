@@ -1,0 +1,15 @@
+language: node_js
+sudo: false
+node_js:
+- 'stable'
+addons:
+  firefox: "latest-nightly"
+env:
+  - MOZ_BINARY=firefox
+deploy:
+  provider: npm
+  email: rfobic@gmail.com
+  on:
+    tags: true
+  api_key:
+    secure: ZArZGb/qyz2XlRr3SThngIiplmtdM0eNslXQchIMyxeie0IeiW6aLAioMr/tTc/JfZHIAoFGXoFliA3CiZgWk0svSaKGW1aVuWzfc+exOqvxjqhAcf41iniUSCaiuE9gGQU57sXn3yaxXHHMqq8hrXHsdxlRcjwjWPxqw5B7IVQ=

@@ -1,0 +1,35 @@
+on: [push, pull_request]
+name: Test
+jobs:
+  npmInstall:
+    name: ${{ matrix.os }} + node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-18.04, macOS-latest]
+        node: [8, 10, 12, 13]
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-python@v1
+    - name: npm install
+      uses: actions/setup-node@v1
+      with:
+          node-version: ${{ matrix.node }}
+    - run: npm install
+    - name: bootstrap
+      uses: actions/setup-node@v1
+      with:
+          node-version: ${{ matrix.node }}
+    - run: npm run bootstrap
+    - name: test
+      uses: actions/setup-node@v1
+      with:
+          node-version: ${{ matrix.node }}
+          python-version: 3.7
+    - run: npm test
+      env: 
+        PARCEL_WORKERS: 1
+        ZERO_LIMIT_BUNDLERS: 3
+        HMRWAITTIME: 60000
+        NODE_OPTIONS: --max-old-space-size=8192

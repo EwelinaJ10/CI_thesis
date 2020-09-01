@@ -1,0 +1,18 @@
+language: node_js
+node_js: 8
+cache:
+  - pip
+  - npm
+env:
+  global:
+  - AWS_DEFAULT_REGION=us-east-1
+  - AWS_ACCESS_KEY_ID=AKIAJU3VDX3UWND273VA
+  - secure: "Rl/2TQP6Ty5+nldT+PKBhNEvPee9wLlVknCVwMS9SHAjPsqfp7ubNmybamF8+dAKoTWuNAsNd3BY8o0tn+V+iH6FXC1aY0xh4N/AJ3IU09XeCIYPDGd3/sQcVr08B2grc3nAnGO7UHVQBR0fhEh6tsgeSF6P2IogE/8IJW51jolLnJLukCTL7VW3cTtBaAPWzo9Tjq6eNh+5jao+Zf7NZwB3hXpdggomDMo6vYyd0GENpIYSphc2qBof3z9L7maSRj6lByS9dTTnar/IYRWuMAbx87uiPoLsD8IF1n/l7Z/En1wiVHJy65uOJ/WDbeQHoUzjvpH/LQD1hiPFyfmXw9i0w4dtiWcbTJZJhuf2DnCVxViWZlD1sQYqrhkj/LER6SOLZIgqC5RbhX68qVCCDC//k8LBm4nHjKDtMGVVje2c8vYNjDkNL9wXXIGHnyZlvdWfJD+WZrfr776Dmn1s5Rwi2ttqSkbN2Sgef1nSMxCoYczwyQFBsRg/jZ2E5zysFNNP8sd7Xk4U+27k5VQD3JEGpyUcbg23qxkoQDG23EjS3XVuvOxsodBFg3vg+rqI73cMPCf+O/HWs7llPuc1kuplIJRg3XwbPN4JsoAaSddOZOsNaIIGe+/+tbfZqQFp0p13HfxoLA/Ri6J+KlEkrhxdTRGSa/ADMQWdVz+sTVA="
+install:
+  - (cd src && npm install)
+script: "./test.sh"
+#deploy:
+#  provider: script
+#  script: "./deploy.sh"
+#  on:
+#    branch: master

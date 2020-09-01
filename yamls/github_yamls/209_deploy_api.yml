@@ -1,0 +1,126 @@
+name: Build & Publish API snapshot to data.covidactnow.org
+
+#######################################################################################
+###
+### YOU DON'T NEED TO MODIFY THIS FILE TO KICK OFF A SNAPSHOT FROM YOUR BRANCH ANYMORE.
+###
+### See: https://github.com/covid-projections/covid-data-model/#api-snapshots
+###
+#######################################################################################
+
+on:
+  repository_dispatch:
+    types: publish-api
+
+env:
+  COVID_DATA_MODEL_REF: ${{ github.event.client_payload.branch }}
+
+  # TODO: This may no longer be used for anything anymore. Remove?
+  COVID_DATA_PUBLIC_REF: 'master'
+
+  # S3 Bucket (used by s3-sync-action tasks) to store final API snapshot.
+  AWS_S3_BUCKET: 'data.covidactnow.org'
+
+  # Use plotting by default on CI
+  PYSEIR_PLOT_RESULTS: 'True'
+
+  # The snapshot ID that identifies all of the API artifacts we're generating and ends
+  # up in the final /snapshot/{id}/ URL.
+  SNAPSHOT_ID: ${{github.run_number}}
+
+  # Used by execute-model (for now) to optimize parallelization on self-hosted
+  # runner.
+  COVID_MODEL_CORES: 96
+
+  # Used by python code that reports errors to sentry.
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+  # use a webhook to write to slack channel dev-alerts for QA
+  SLACK_DEV_ALERTS_WEBHOOK: ${{ secrets.SLACK_DEV_ALERTS_WEBHOOK }}
+
+jobs:
+  build-and-publish-snapshot:
+    runs-on: self-hosted
+    steps:
+
+    - name: Checkout covid-data-model (${{ env.COVID_DATA_MODEL_REF }})
+      uses: actions/checkout@v2
+      with:
+        repository: covid-projections/covid-data-model
+        path: covid-data-model
+        lfs: true
+        ref: '${{env.COVID_DATA_MODEL_REF}}'
+    - name: Checkout covid-data-public (${{ env.COVID_DATA_PUBLIC_REF }})
+      uses: actions/checkout@v2
+      with:
+        repository: covid-projections/covid-data-public
+        path: covid-data-public
+        lfs: true
+        ref: '${{env.COVID_DATA_PUBLIC_REF}}'
+
+    - name: Setup Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.7.6'
+        architecture: 'x64'
+
+    - name: Cache Pip
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          ${{ runner.os }}-
+
+    - name: Install Dependencies
+      working-directory: ./covid-data-model
+      run: pip install -r requirements.txt
+
+    # - name: run raw data QA
+    #   run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_raw_data_qa
+
+    - name: Pull git lfs
+      working-directory: ./covid-data-model
+      run: git lfs pull
+
+    - name: Build Model Results (run.sh .. .. execute_model)
+      run: |
+        ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_model
+
+    - name: Zip Model Results (run.sh .. .. execute_zip_folder)
+      run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_zip_folder
+
+    - name: Upload Raw Data QA and Model Results
+      uses: actions/upload-artifact@v2-preview
+      with:
+        name: model-results-${{env.SNAPSHOT_ID}}
+        path: /data/api-results-${{env.SNAPSHOT_ID}}/api-results.zip
+
+
+    - name: Build API (run.sh .. .. execute_api)
+      run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_api
+
+    - name: make and copy to local tmp directory
+      run: |
+        mkdir -p ./tmp/data/
+        cp -r /data/api-results-${{env.SNAPSHOT_ID}}/ ./tmp/data/
+
+    - name: Deploy Artifacts to S3 (https://data.covidactnow.org/snapshot/${{env.SNAPSHOT_ID}}/).
+      uses: jakejarvis/s3-sync-action@master
+      with:
+        args: --acl public-read --follow-symlinks --delete
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SOURCE_DIR: './tmp/data/api-results-${{env.SNAPSHOT_ID}}/'
+        DEST_DIR: 'snapshot/${{env.SNAPSHOT_ID}}/'
+
+    - name: remove local tmp directory
+      run: |
+        rm -rf ./tmp/data/
+
+    - name: Trigger website PR generation if conditions are met (master branch, morning build, etc)
+      env:
+        GITHUB_TOKEN: ${{ secrets.CAN_ROBOT_PERSONAL_ACCESS_TOKEN }}
+      run: ./covid-data-model/tools/maybe-trigger-web-snapshot-update.sh ${{env.SNAPSHOT_ID}} ${{env.COVID_DATA_MODEL_REF}} ${{env.COVID_DATA_PUBLIC_REF}}

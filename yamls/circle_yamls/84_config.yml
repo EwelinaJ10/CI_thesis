@@ -1,0 +1,225 @@
+version: 2.1
+
+orbs:
+    aws-cli: circleci/aws-cli@0.1.20
+
+jobs:
+    build:
+        working_directory: ~/repo
+        docker:
+            - image: circleci/node:10.15.3
+        steps:
+            - checkout
+            - run:
+                name: "Update NPM"
+                command: sudo npm install -g npm@6.9.0
+            - run:
+                name: "Install Yarn"
+                command: sudo npm install -g yarn@1.15.2
+            - run:
+                name: "Set caching variables"
+                command: |
+                  LAST_SUCCESSFUL_BUILD_URL="https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/develop?filter=successful&limit=1"
+                  LAST_SUCCESSFUL_COMMIT=`curl -Ss -u "$CIRCLE_TOKEN:" $LAST_SUCCESSFUL_BUILD_URL | jq -r '.[0]["vcs_revision"]'`
+                  echo $LAST_SUCCESSFUL_COMMIT > /tmp/last-successful-commit
+                  echo $CIRCLE_SHA1 > /tmp/current-commit
+            - restore_cache:
+                keys:
+                    - build-cache-{{ .Branch }}-{{ checksum "/tmp/last-successful-commit" }}
+            - run:
+                name: "Install Dependencies"
+                command: yarn install
+            - run:
+                name: "Build Packages"
+                command: yarn build
+            - save_cache:
+                key: repo-{{ .Environment.CIRCLE_SHA1 }}
+                paths:
+                    - ~/repo
+            - save_cache:
+                key: build-cache-{{ .Branch }}-{{ checksum "/tmp/current-commit" }}
+                paths:
+                    - ~/repo/packages/aztec.js/node_modules
+                    - ~/repo/packages/protocol/node_modules
+                    - ~/repo/packages/bn128/node_modules
+                    - ~/repo/packages/dev-utils/node_modules
+                    - ~/repo/packages/extension/node_modules
+                    - ~/repo/packages/secp256k1/node_modules
+                    - ~/repo/packages/note-access/node_modules
+                    - ~/repo/packages/typed-data/node_modules
+                    - ~/repo/packages/contract-addresses/node_modules
+                    - ~/repo/packages/contract-artifacts/node_modules
+                    - ~/repo/packages/extension/node_modules
+                    - ~/repo/packages/extension/build
+                    - ~/repo/packages/aztec.js/dist
+                    - ~/repo/packages/bn128/dist
+                    - ~/repo/packages/secp256k1/lib
+                    - ~/repo/packages/contract-addresses/lib
+                    - ~/repo/packages/contract-artifacts/lib
+                    - ~/repo/packages/note-access/lib
+                    - ~/repo/packages/dev-utils/lib
+                    - ~/repo/packages/documentation/public
+                    - ~/repo/packages/typed-data/lib
+    lint:
+        working_directory: ~/repo
+        docker:
+            - image: circleci/node:10.15.3
+        steps:
+            - restore_cache:
+                keys:
+                    - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - run:
+                name: "Lint Packages"
+                command: |
+                    yarn prettier:ci
+                    yarn lint
+    test:
+        working_directory: ~/repo
+        docker:
+            - image: circleci/node:10.15.3
+            - image: trufflesuite/ganache-cli:v6.4.1
+              command: ganache-cli -i 1234 -p 8545 -e 10000000 -l 6721975 -m=\"$TEST_MNEMONIC\"
+        steps:
+            - restore_cache:
+                keys:
+                    - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - run:
+                name: "Test Packages"
+                command: yarn test
+    testNet:
+        working_directory: ~/repo
+        docker:
+            - image: circleci/node:10.15.3
+        steps:
+            - restore_cache:
+                keys:
+                    - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - run:
+                name: "TestNet integration test"
+                command: yarn test:integration
+    artifacts:
+        working_directory: ~/repo
+        docker:
+            - image: circleci/node:10.15.3
+            - image: trufflesuite/ganache-cli:v6.4.1
+              command: ganache-cli -i 1234 -p 8545 -e 10000000 -l 6721975
+        steps:
+            - restore_cache:
+                keys:
+                    - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - run:
+                name: "Orchestrate Artifacts"
+                command: yarn script:orchestrate:artifacts
+    docs-aztecjs:
+        working_directory: ~/repo
+        docker:
+            - image: circleci/node:10.15.3
+        steps:
+            - restore_cache:
+                keys:
+                    - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - run:
+                name: "Build Docs"
+                command: yarn build:docs
+            - run:
+                name: "Prepare Git"
+                command: |
+                    git remote add docs https://$GH_TOKEN@github.com/AztecProtocol/AZTEC.git
+                    git config credential.helper "cache --timeout=120"
+                    git config user.email $AZTEC_BOT_EMAIL
+                    git config user.name $AZTEC_BOT_NAME
+            - run:
+                name: "Publish Docs"
+                command: yarn publish:docs
+    deploy-docs:
+        working_directory: ~/repo
+        executor: aws-cli/default
+        steps:
+            - aws-cli/setup:
+                profile-name: circleci
+            - restore_cache:
+                keys:
+                    - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - run: 
+                name: Delete old docs
+                command: aws s3 rm s3://${AWS_DOCS_BUCKET} --recursive
+            - run:
+                name: Upload new docs
+                command: aws s3 cp ./packages/documentation/public s3://${AWS_DOCS_BUCKET} --recursive --metadata-directive REPLACE --cache-control "max-age=3600" --acl public-read
+            - run:
+                name: Clear cache
+                command: aws cloudfront create-invalidation --distribution-id ${AWS_DOCS_CLOUDFRONT} --paths "/*"
+    release:
+        working_directory: ~/repo
+        docker:
+            - image: circleci/node:10.15.3
+        steps:
+            - restore_cache:
+                keys:
+                    - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - run:
+                name: "Build Packages for Production"
+                command: yarn build:prod
+            - run: mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+            - run:
+                name: "Release Packages"
+                command: yarn script:publish
+workflows:
+    version: 2
+    main:
+        jobs:
+            - build:
+                filters:
+                    branches:
+                        ignore: gh-pages
+            - lint:
+                requires:
+                    - build
+                filters:
+                    branches:
+                        ignore: gh-pages
+            - test:
+                requires:
+                    - build
+                filters:
+                    branches:
+                        ignore: gh-pages
+            - testNet:
+                requires:
+                    - build
+                filters:
+                    branches:
+                        only:
+                            - develop
+            - artifacts:
+                requires:
+                    - lint
+                    - test
+                filters:
+                    branches:
+                        only:
+                            - develop
+            - docs-aztecjs:
+                requires:
+                    - lint
+                    - test
+                filters:
+                    branches:
+                        only:
+                            - develop
+            - deploy-docs:
+                requires:
+                    - lint
+                    - test
+                filters:
+                    branches:
+                        only:
+                            - develop
+            - release:
+                requires:
+                    - lint
+                    - test
+                filters:
+                    branches:
+                        only:
+                            - master

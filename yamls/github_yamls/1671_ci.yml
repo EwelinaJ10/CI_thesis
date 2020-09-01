@@ -1,0 +1,74 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+
+  check-formatting:
+    runs-on: ubuntu-latest
+
+    name: Consult black on python formatting
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: Gr1N/setup-poetry@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+      - name: Install dependencies
+        run: poetry install
+      - name: Run black
+        run: poetry run poe check-style
+
+  run-tests:
+    runs-on: ubuntu-latest
+
+    name: Run tests with tox
+
+    strategy:
+      matrix:
+        python-version: [ '3.6', '3.7', '3.8']
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: Gr1N/setup-poetry@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+      - name: Install dependencies
+        run: |
+          poetry run pip install --upgrade pip
+          poetry install
+      - name: Run tests
+        run: |
+          poetry run poe generate
+          poetry run poe test
+
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: Gr1N/setup-poetry@v2
+      - name: Build package
+        run: poetry build
+      - name: Publish package to PyPI
+        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+        run: poetry publish -n
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.pypi }}

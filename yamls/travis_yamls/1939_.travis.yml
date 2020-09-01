@@ -1,0 +1,53 @@
+language: go
+go:
+  - 1.13.x
+
+services:
+  - docker
+
+env:
+  global:
+    - DOCKER_USERNAME=samcibot
+    # DOCKER_ACCESS_TOKEN
+    - secure: P2L9TJhbjvfSZyCjX9VFddaA8r09l9mCHkVNWcWYRkWn5W3bSaapPsjLX07AAuCeY7/UjduDhFRwWAJ9ucVbHKcdibOIY1C2x7mzqdzmyuh/U+IFhh/09li/PzB87RmfgkRnmStvWG+wA1f4ABdTcYXk2N77KEmLwx2Bivl8yfAJ0KFBjtB3dXu6+Ulr+nf1gfQ6N9qB4+tAVVyelQdKsM+QNH7PO8NxyhMo/wMDFzS8AODpvPaEPnLRYo3OT7CkN+OZtjI7Yz5MHhXqB7N24v2AU094MnxoRL1CzXh4drvbhHXQFJq75TZt/Kj/CRvQYqXARFxOHbWvyE4sJKptyzhMCDnOIIqgvkWHme2n8m/RPrrTEF2dsas4C53IyTyv7nBZOvjvBfvYlg2wcHvpaJZiIlClIeO2OVokj4Kkuhg4jAnQt2xiGyfD+tVcpkR48JyrxPQDWfpILK+NgCxr6WG1J+cP/hcx2qvRRXGB8Lmro9u6Vp6WVXXWVBoPXXlpzjI0erRtmebndRAXkZYZ3hd7NH0vslfIuPVdR4yIdDxIoqASPfXAyQC25grp5SlxpBUYhZPSUSbbNfdzKPBrMwB9ff+Ifr/J8gZqsHbvhbs3Sj/7uA84CGVBjemPLaw7NUwfdFy/W9Q4+aqa370PDY1xoww2XnIR3HwpujhoL8g=
+
+script: make ci
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+before_deploy:
+  - 'if [ "$TRAVIS_TAG" != "" ]; then make release; fi'
+  - openssl aes-256-cbc -K $encrypted_fa8540867d09_key -iv $encrypted_fa8540867d09_iv -in .travis/deploy_key.enc -out .travis/deploy_key -d
+  - chmod 600 .travis/deploy_key
+
+deploy:
+  # deploy docs to website
+  - provider: script
+    script: .travis/deploy_docs.sh
+    skip_cleanup: true
+    on:
+      all_branches: true
+
+  # sync proto definitions
+  - provider: script
+    script: GIT_SSH_COMMAND="ssh -i $(pwd)/.travis/deploy_key" make sync-proto
+    skip_cleanup: true
+    on:
+      branch: master
+
+  # deploy tarballs to github
+  - provider: releases
+    api_key:
+      secure: RCTZXf3yN+1xnFaenGCuyp73Y6iSLPk9j+Awt6TCUCOxyKhOkUfCNd01FiL2pZ77eUKO3GzpxtIZPU+szwloPNrc3qSyJOvxzHZ2Eed7cHj2aqdNSS/3dNyiCuuyKq/Mw+b3/WBFvskw9GQVzXbjj6L+tN7/WT8IFDTYzS8pp69DT0i1Jo+w6EUa5n1qa3vXbHm3c7yGXptpPdPqlZUh9rx3fhENrzi2qIsDJM852Cdcb7WmvXOA5AiyGzpZk4Pzf9vA/zeCkwHsMTv+k5UBreT/2WCs47alqnx2Rm/k4FBtjZBMMxfRz1Nth/s6ALALO/GkChmpkK7I9Pl056v4tSJsse0C/JJH2l5EhDw5KIBS6y224HERu+SdQkOLO9ZMFx1fSZikzSE/+b1nUoIl3rJtluqjhfPi22ty6zy5b/4YIisZr7U7zAzOD+9ARx3lI4Mot83XegTaEMA+1NNzzkQZvZKJGLCSeIOmuF6zboGZ4qzZOQcx4H4AWretsqsi3K1SnAq/7hIw+vhZfxD/CrBK+pHKq0ExfbTvTthDH+rYT/AOHLLkdRB/fZnTsr175t44GZSJbKjSrMj9dlPoJyws2jyzlwUS+/2sb0SYywvJFR9CRlAY6dwMDxJ5t5FSDPYSF12hqHilRV/kAt8vYmkLC/fu9qiJpjDjGAT4e/w=
+    skip_cleanup: true
+    file_glob: true
+    file: .release/*.tar.gz
+    on:
+      tags: true
+
+  # deploy images to dockerhub
+  - provider: script
+    script: echo "$DOCKER_ACCESS_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin && make push-release-image
+    skip_cleanup: true
+    on:
+      tags: true

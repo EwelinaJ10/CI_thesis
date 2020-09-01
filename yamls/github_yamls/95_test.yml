@@ -1,0 +1,23 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  ruby:
+    strategy:
+      fail-fast: false
+      matrix:
+        container: [ruby, jruby]
+    runs-on: ubuntu-latest
+    name: Test on ${{ matrix.container }}
+    container: docker://${{ matrix.container }}
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: |
+        gem update --system
+        gem i bundler
+        bundle install --jobs 4 --retry 3
+    - name: Run tests
+      run: |
+        bundle exec rake

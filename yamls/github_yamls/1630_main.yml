@@ -1,0 +1,32 @@
+name: Github Actions
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        format: [darwin-dmg, darwin-pkg, linux-appimage, linux-deb, linux-rpm, linux-snap, windows-msi]
+    container:
+      image: goflutter/hover:v0.42.0
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+      - name: Run `hover build ${{ matrix.format }}`
+        run: |
+          cd $GITHUB_WORKSPACE
+          export VERSION_NAME=$(git describe --tags | sed 's/-//g')
+          cd stocks && hover build ${{ matrix.format }} --version-number ${VERSION_NAME}
+          ls -lah ./go/build/outputs/${{ matrix.format }}/*
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.format }}
+          path: stocks/go/build/outputs/${{ matrix.format }}/*

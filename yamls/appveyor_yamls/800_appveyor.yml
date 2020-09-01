@@ -1,0 +1,79 @@
+# AppVeyor CI configuration for building Windows binaries for ffsend.
+# These Windows binaries are published on GitHub as release files.
+#
+# The main CI runs on GitLab CI at: https://gitlab.com/timvisee/ffsend/pipelines
+
+# Only build version tags
+skip_non_tags: true
+branches:
+  only:
+    - /v\d*\.\d*\.\d*/
+
+# Build for the x86_64 Windows target
+platform: x64
+environment:
+  RUSTUP_USE_HYPER: 1
+  CARGO_HTTP_CHECK_REVOKE: false
+  GITHUB_TOKEN:
+    secure: jqZ4q5oOthKX/pBL1tRsBJsfGPIee3q+N/UBSCZNjCrlFUNfQSfibBPzzICYg1he
+  CHOCOLATEY_TOKEN:
+    secure: k5Q57xoXa6qSFScSpRaww2puW0yjYoH19uIq3qS1emOG+lNs9TYCnWYhUzQ2gzfc
+
+  matrix:
+    - TARGET: x86_64-pc-windows-msvc
+      BITS: 64
+
+# Extract release binary artifacts
+artifacts:
+- path: .\ffsend*.exe
+- path: .\ffsend.*.nupkg
+
+# Install dependencies: Rust
+install:
+  # Install Rust
+  - appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+  - rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain stable
+  - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
+  - rustc -V
+  - cargo -V
+  - git submodule update --init
+
+# Build dynamic and static Windows binaries, release on GitHub
+build_script:
+  # Build dynamic release binary
+  - cargo build --release --features no-color --verbose
+  - copy .\target\release\ffsend.exe .\ffsend-%TARGET%.exe
+
+  # Build static release binary
+  - set RUSTFLAGS=-Ctarget-feature=+crt-static
+  - cargo build --release --features no-color --verbose
+  - copy .\target\release\ffsend.exe .\ffsend-%TARGET%-static.exe
+
+  # Install github-release
+  - appveyor DownloadFile https://github.com/tfausak/github-release/releases/download/1.2.4/github-release-windows.zip -FileName github-release.zip
+  - 7z e github-release.zip
+
+  # Collect binary, set package version and build chocolatey package
+  - copy .\ffsend-%TARGET%-static.exe .\pkg\choco\ffsend\tools\ffsend.exe
+  - cd .\pkg\choco\ffsend\
+  - ps: echo $env:APPVEYOR_REPO_TAG_NAME
+  - ps: ((Get-Content -path .\ffsend.nuspec -Raw) -replace "0.0.0",$env:APPVEYOR_REPO_TAG_NAME.Substring(1)) | Set-Content -Path .\ffsend.nuspec
+  - choco pack
+  - copy ffsend.*.nupkg ..\..\..\
+  - cd ..\..\..\
+
+  # Create the release, upload the binaries
+  # TODO: fix the line below, which is causing CI to error
+  # - ps: Invoke-Expression -Command '$ErrorActionPreference = "SilentlyContinue"; .\github-release.exe release --token $env:GITHUB_TOKEN --owner timvisee --repo ffsend --tag $env:APPVEYOR_REPO_TAG_NAME --title "ffsend $env:APPVEYOR_REPO_TAG_NAME"; exit 0'
+  - ps: .\github-release.exe upload --token $env:GITHUB_TOKEN --owner timvisee --repo ffsend --tag $env:APPVEYOR_REPO_TAG_NAME --file .\ffsend-$env:TARGET.exe --name ffsend-$env:APPVEYOR_REPO_TAG_NAME-windows-x64.exe
+  - ps: .\github-release.exe upload --token $env:GITHUB_TOKEN --owner timvisee --repo ffsend --tag $env:APPVEYOR_REPO_TAG_NAME --file .\ffsend-$env:TARGET-static.exe --name ffsend-$env:APPVEYOR_REPO_TAG_NAME-windows-x64-static.exe
+  - ps: .\github-release.exe upload --token $env:GITHUB_TOKEN --owner timvisee --repo ffsend --tag $env:APPVEYOR_REPO_TAG_NAME --file (Get-Item .\ffsend.*.nupkg).FullName --name ffsend-$env:APPVEYOR_REPO_TAG_NAME.nupkg
+
+  # Publish the chocolatey package
+  # TODO: re-enable when chocolatey is properly accepting packages again
+  # - cd .\pkg\choco\ffsend\
+  # - choco push --api-key %CHOCOLATEY_TOKEN%
+  # - cd ..\..\..\
+
+# We don't test anything here
+test: false

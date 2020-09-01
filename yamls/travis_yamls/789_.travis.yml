@@ -1,0 +1,78 @@
+language: python
+services:
+  - docker
+env:
+  global:
+    - KILI_API_ENDPOINT=https://staging.cloud.kili-technology.com/api/label/graphql
+    - secure: "ZkQ5mV47ckIaIF9ZI9oGZ/bY9taqJW0jMsW8HDdgQsTX8yckTsf0VKHQbATFs6pmMsWL9cI2hBi4yp8tuoNXGIl9Q+yktfwaVCi0ZlaIfrvxLLhccSnakfCaMU2++x2j46hHtdJ4cLOQ5zDTFi+BLXdboyl3HvnrhSCvTsfV3GHx9yoTAe2zhl9Y+wYwxU5ACRqBO2joDXaQgbyf2B3OEB6yRXdPUGuhZ3EWkyKFKh+uvYd6gLnwkxTXsAU54AvqS+EAkgpn9R5855p/Vh0WgJBwU8PyJR9yBMdAC4KOlolYXVMt+FE1GTTvLkZSbgdx363loPztwZOh0lWZ69kiudIqW72vhovRahCci9YmSWyb9R2DGZ1LO+CeY4tVAsn3n1694y+NibfraPcUUDli9ATUA0RHLTsZN8g/qpcHUZ1Tar5M6MO7zi8YTYhRJkJ8hqKDbZFGMSt3imF/47wT3ApR8fIQVU6IvBVyMz5D4LdBgcNlTah0S+bSu+JFDdTtIb8Dva0sQP4BofWwpN7SYTx+7GeS3mQgbIV1wBMDS4E34bC43qeiWACvWXYVADHdbYaHlYfmW+LJHUDanFD7UNtpxkvVpAxzbgTSjEEsO8JlqHs5N/EzIt0k70OFe6MuhK4J9MphB0noyIhAaErpTrJVSuVj3iPCASm2U2/g6ao="
+    - secure: "HmY5WAcDF3NCqq/i3s4WdG2yb1oBt7ur1RbJz8pise8s4jaTC2GQKK8wDT9xpwaForarUMO7SwW0t3DIqsh3mZmkH43KvzHx9cdTs9bUvlyN3QgwQhlSQcTdnAGt7F8j2Moqgo4ISvg6aoBGrok7MzBFJ5tLmDhlwx44NJOwWw7hwpzVz795e8nALYu+CQrpCe5DjRfs5LSsujbtsGKQzCNxYPMuLtQH5/U/fdOFPsMHaUqFIP3PAYnRp/efU4RjDXuCH0fQjVfMWArm4XzigHLypbbknuZ9cJOOKi7H6SqQoAy/coKlYKNdZZfdJOs+LkdsCnUAgWjCzm46aTvbTsGn0ImtaUiTIUPUtR2yUHkHRK/Hw5SyEOyVSbtuZiQWwLs7xy9EBwZnb0XW4eUnAxdYchRR2jCjqo4Z2X1D0/AVypUyj49tj/wNI4hApXRygV59k6oa0tZpN/t9EphjmIq4Wh3E9r4z7fNsCPVs1epCJwp8kr3DLlD63DHOFIeQx5kbY8QbNFIrHFUeV4+3usT3y2Pf454UoBCd2p/UNsJonS6D3cn7T5d4Ziy2DIHX8UzT6HmqK+YY3fZSMpkcXcmlDwqmm1YvR8QUq0U5C2DYIKch8CvcRxvThJQo8j+qWhm/1xMg8OyKoAAjwHoHDyFxZ3TZ+S16helk+DcR+GQ="
+jobs:
+  include:
+    # To debug a recipe by running it in a Docker locally as it is run in Travis, launch the following lines:
+    #
+    # DOCKER_IMAGE=...
+    # KILI_USER_EMAIL=...
+    # KILI_USER_PASSWORD=...
+    # TRAVIS_BRANCH=...
+    #
+    # docker pull ${DOCKER_IMAGE}
+    #
+    # docker run \
+    #   --env KILI_API_ENDPOINT=https://staging.cloud.kili-technology.com/api/label/graphql \
+    #   --env KILI_USER_EMAIL=${KILI_USER_EMAIL} \
+    #   --env KILI_USER_PASSWORD=${KILI_USER_PASSWORD} \
+    #   --rm \
+    #   -p 10000:8888 \
+    #   ${DOCKER_IMAGE} /bin/sh -c "cd /root && \
+    #     apt-get update && apt-get install -y gcc && \
+    #     git clone --branch ${TRAVIS_BRANCH} https://github.com/kili-technology/kili-playground.git && \
+    #     pip install ./kili-playground && \
+    #     jupyter notebook --allow-root --ip=0.0.0.0 --port=8888"
+    #
+    # Then start https://localhost:10000/?token=TOKEN_OUTPUTED_IN_CONSOLE
+    - &test-recipes
+      stage: Test *.ipynb in recipes
+      script:
+        - docker pull ${DOCKER_IMAGE}
+        - |
+          docker run \
+            --env KILI_API_ENDPOINT=${KILI_API_ENDPOINT} \
+            --env KILI_USER_EMAIL=${KILI_USER_EMAIL} \
+            --env KILI_USER_PASSWORD=${KILI_USER_PASSWORD} \
+            ${DOCKER_IMAGE} /bin/sh -c "cd /root && \
+              apt-get update && apt-get install -y gcc && \
+              git clone --branch ${TRAVIS_BRANCH} https://github.com/kili-technology/kili-playground.git && \
+              pip install ./kili-playground && \
+              jupyter nbconvert \
+                --to notebook \
+                --ExecutePreprocessor.kernel_name=python3 \
+                --ExecutePreprocessor.timeout=500 \
+                --execute /root/kili-playground/${NOTEBOOK_PATH}"
+      env:
+        - DOCKER_IMAGE=continuumio/anaconda3:2020.02
+        - NOTEBOOK_PATH=recipes/transfer_learning_with_yolo.ipynb
+    - <<: *test-recipes
+      env:
+        - DOCKER_IMAGE=continuumio/anaconda3:2020.02
+        - NOTEBOOK_PATH=recipes/import_predictions.ipynb
+    - <<: *test-recipes
+      env:
+        - DOCKER_IMAGE=continuumio/anaconda3:2020.02
+        - NOTEBOOK_PATH=recipes/create_project.ipynb
+    - <<: *test-recipes
+      env:
+        - DOCKER_IMAGE=continuumio/anaconda3:2020.02
+        - NOTEBOOK_PATH=recipes/medical_imaging.ipynb
+    - <<: *test-recipes
+      env:
+        - DOCKER_IMAGE=continuumio/anaconda3:2020.02
+        - NOTEBOOK_PATH=recipes/query_methods.ipynb
+    - <<: *test-recipes
+      env:
+        - DOCKER_IMAGE=continuumio/anaconda3:2020.02
+        - NOTEBOOK_PATH=recipes/import_assets.ipynb
+    # Declare other tests as follow:
+    # - <<: *test-recipes
+    #   env:
+    #     - DOCKER_IMAGE=docker/image
+    #     - NOTEBOOK_PATH=recipes/path/to.ipynb

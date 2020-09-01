@@ -1,0 +1,37 @@
+sudo: false
+language: node_js
+node_js:
+ - '8.12'
+cache:
+  directories:
+  - node_modules
+branches:
+  only:
+  - master
+notifications:
+  email: true
+jobs:
+  include:
+    - stage: Installing dependencies
+      script: npm install       
+before_deploy: 
+  - npm run build
+deploy:
+  provider: pages
+  local-dir: public
+  target-branch: gh-pages
+  repo: front10/landing-page-book
+  skip-cleanup: true
+  github-token: $GH_TOKEN
+  keep-history: true
+  on:
+    branch: master
+  after_success:
+  - bash scripts/clear-cloudflare-cache.sh -k $AUTH_KEY -e $AUTH_EMAIL -z $ZONE
+env:
+  global:
+    - secure: "OStZ0GRzFK2EHH+BqqI+hDtuPM+z05S4Fj4PqSH85JqEMfKvty/g2UiRMnOpCk+4FPdQcxb4fF+HFELr9SV/aZDsJsPdTGmFlHK6jKIvZSb34TK7z0Z3RJKlWGbX1gE5TgxFIFLImRgYeNkGQCEoVIY5SZuvnMEFacyY7HbHYx47j5dTMm/TgQDzq7z2zTQHHc7/LtCTHZlFbpiVekdAfnMycgcB1zj5Fl4o5aXciewjrTIfJ8k0r8gWRUeP8gnpGgyZi+VGajDXo2k2wJErTmCKAi14vwNv6e8kyYVVzBOKBjg1cwkHlmALTD+OMVZdrCy7Qf1oKx5P5YNSPg1IThZSjsL06Mkl+7MmrrJzQTcyy7qHphfCcAXSPwo6fVvdMsPeWjafrMgY/89eyA+gTEzT2l8S6t9MNJfWd2H/zQAjX36nRm4yx6rg+xuyx2dEV75Sg69jopGgZwxNrSYdKbg1vxyEn0FkwW5gQBtDIOsjUtDbqNA7pMZ2k3qjPimrReTHJBDsMrnYR7/HHxwmkBIDnba96NFx/kOFzyOA419a8Jq88e+H2MmiLSiCaaEGS3cJSeO5X5gc3Wz3hCME4chUaD0ef27EmPYRvX/31wjAuX34txqxbkpjqOUkUGdpjf4IOPtYBak2k2DQNnD1Fg7nIkX8WHUOR3TDt098bBQ="
+addons:
+  browserstack:
+    username: "yoandrycollazo1"
+    access_key: "keqUpLHUTfApAq2fM77i"

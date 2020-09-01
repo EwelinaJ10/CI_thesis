@@ -1,0 +1,50 @@
+version: 2
+
+defaults: &linux_defaults
+  docker:
+    - image: circleci/python:3.7.2
+
+jobs:
+  check_dependencies:
+    <<: *linux_defaults
+    steps:
+      - checkout
+      - run: sudo pip install matplotlib networkx
+      - run: make check_dependencies
+
+  check_links:
+    <<: *linux_defaults
+    steps:
+      - checkout
+      - run: make check_links
+
+  check_sections:
+    <<: *linux_defaults
+    steps:
+      - checkout
+      - run: make check_sections
+
+  check_syntax:
+    <<: *linux_defaults
+    steps:
+      - checkout
+      - run: curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+      - run: sudo apt-get update && sudo apt-get -y install nodejs npm && sudo npm install codedown typescript tslint -g
+      - run: make check_syntax
+
+  spellcheck:
+    <<: *linux_defaults
+    steps:
+      - checkout
+      - run: sudo apt-get update && sudo apt-get -y install aspell
+      - run: make spellcheck_noninteractive
+
+workflows:
+  version: 2
+  test-suite:
+    jobs:
+      - check_dependencies
+      - check_links
+      - check_sections
+      - check_syntax
+      - spellcheck

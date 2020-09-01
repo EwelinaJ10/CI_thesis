@@ -1,0 +1,109 @@
+version: 2.1
+
+anchors:
+  - &node-version-enum
+    - '10.21'
+    - '12.18'
+    # TODO: Deprecate Node 13 since it is now unsupported
+    - '13.14'
+    - '14.5'
+  - &webpack-version-enum
+    - '4'
+    - '5'
+
+orbs:
+  node: circleci/node@3.0.1
+
+commands:
+  install-deps:
+    parameters:
+      node-version:
+        enum: *node-version-enum
+        type: enum
+    steps:
+      - restore_cache:
+          keys:
+            - node-deps-v1-<< parameters.node-version >>-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - node-deps-v1-<< parameters.node-version >>-{{ .Branch }}-
+            - node-deps-v1-<< parameters.node-version >>-
+      - run:
+          name: Install project dependencies
+          command: yarn install --cache-folder ~/.cache/yarn --frozen-lockfile
+      - save_cache:
+          key: node-deps-v1-<< parameters.node-version >>-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+  setup-headless-chromium:
+    steps:
+      - run:
+          name: Install dependencies for headless Chromium
+          command: |
+            sudo apt-get update
+            sudo apt-get install -yq \
+            gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
+            libexpat1 libfontconfig1 libgbm1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 \
+            libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
+            libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 \
+            ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
+      - run:
+          name: Setup sandboxing for Chromium
+          command: sudo sysctl -w kernel.unprivileged_userns_clone=1
+
+jobs:
+  lint-and-format:
+    executor: node/default
+    working_directory: ~/project
+    steps:
+      - checkout
+      - install-deps:
+          node-version: '12.18'
+      - run:
+          name: Check Project Linting
+          command: yarn lint
+      - run:
+          name: Check Project Formatting
+          command: yarn format:check
+
+  test:
+    executor:
+      name: node/default
+      tag: << parameters.node-version >>
+    parameters:
+      node-version:
+        enum: *node-version-enum
+        type: enum
+      webpack-version:
+        enum: *webpack-version-enum
+        type: enum
+    parallelism: 4
+    working_directory: ~/project
+    steps:
+      - checkout
+      - setup-headless-chromium
+      - install-deps:
+          node-version: << parameters.node-version >>
+      - run:
+          name: Run Tests
+          command: |
+            TESTFILES=$(circleci tests glob "test/**/*.test.js" | circleci tests split --split-by=timings)
+            yarn test $TESTFILES
+          environment:
+            JEST_JUNIT_ADD_FILE_ATTRIBUTE: 'true'
+            JEST_JUNIT_OUTPUT_DIR: test-results/jest
+            JEST_JUNIT_OUTPUT_NAME: results.xml
+            WEBPACK_VERSION: << parameters.webpack-version >>
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+
+workflows:
+  test-matrix:
+    jobs:
+      - lint-and-format
+      - test:
+          matrix:
+            parameters:
+              node-version: *node-version-enum
+              webpack-version: *webpack-version-enum
+          name: test/node:<< matrix.node-version >>/webpack:<< matrix.webpack-version >>

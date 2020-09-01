@@ -1,0 +1,69 @@
+name: Testing Integration
+
+on:
+  schedule:
+    - cron:  '0 4 * * 5'
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - '**.php'
+      - '!docs/**'
+
+jobs:
+  run:
+    env:
+      STRIPE_API_PUBLISHABLE_KEY: ${{ secrets.STRIPE_API_PUBLISHABLE_KEY }}
+      STRIPE_API_SECRET_KEY: ${{ secrets.STRIPE_API_SECRET_KEY }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.3', '7.2', '7.1']
+        wordpress: ['5.3', '5.0']
+        include:
+          - php: '7.1'
+            use_xdebug: 1
+          - php: '7.1'
+            wordpress: '5.0'
+            coverage: 1
+          - php: '7.3'
+            wordpress: '5.0'
+            debug: 1
+
+      fail-fast: false
+    name: WordPress ${{ matrix.wordpress }} on PHP ${{ matrix.php }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install PHP
+        if: matrix.coverage == 1
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, mbstring
+
+      - name: Build "testing" Docker Image
+        env:
+          PHP_VERSION: ${{ matrix.php }}
+          WP_VERSION: ${{ matrix.wordpress }}
+          USE_XDEBUG: ${{ matrix.use_xdebug }}
+        run: bin/run-docker.sh build -t
+
+      - name: Run Tests w/ Docker.
+        env:
+          COVERAGE: ${{ matrix.coverage }}
+          DEBUG: ${{ matrix.debug }}
+          SKIP_TESTS_CLEANUP: ${{ matrix.coverage }}
+        run: bin/run-docker.sh run -t
+
+      - name: Push Codecoverage to Coveralls.io
+        if: ${{ matrix.coverage == 1 && env.STRIPE_API_PUBLISHABLE_KEY != 0 }}
+        env:
+          COVERALLS_RUN_LOCALLY: 1
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: vendor/bin/php-coveralls -v

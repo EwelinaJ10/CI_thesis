@@ -1,0 +1,50 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container: rust:latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: deadpool
+          POSTGRES_PASSWORD: deadpool
+          POSTGRES_DB: deadpool
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+      rabbitmq:
+        image: rabbitmq
+        env:
+          RABBITMQ_DEFAULT_USER: deadpool
+          RABBITMQ_DEFAULT_PASS: deadpool
+          RABBITMQ_DEFAULT_VHOST: deadpool
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --workspace --verbose
+    - name: Run tests
+      run: cargo test --workspace --verbose
+      env:
+        PG__HOST: postgres
+        PG__PORT: 5432
+        PG__USER: deadpool
+        PG__PASSWORD: deadpool
+        PG__DBNAME: deadpool
+        REDIS__URL: redis://redis/
+        AMQP__URL: amqp://deadpool:deadpool@rabbitmq/deadpool

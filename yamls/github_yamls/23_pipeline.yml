@@ -1,0 +1,50 @@
+name: Pipeline
+
+on: push
+
+jobs:
+
+  publish_mapper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          cp README.md ./mapper/README.md
+          cp banner.svg ./mapper/banner.svg
+          cp -f LICENSE ./mapper/LICENSE
+      - name: '>> test & publish mapper <<'
+        id: publish
+        uses: k-paxian/dart-package-publisher@master
+        with:
+          credentialJson: ${{ secrets.CREDENTIAL_JSON }}
+          relativePath: mapper
+      - name: 'Commit release tag'
+        if: steps.publish.outputs.success
+        uses: hole19/git-tag-action@master
+        env:
+          TAG: ${{steps.publish.outputs.package}}-${{steps.publish.outputs.localVersion}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish_adapter:
+    needs: [publish_mapper]
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        adapter: ["flutter", "fixnum", "mobx"]
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: cp -f LICENSE ./adapters/${{ matrix.adapter }}/LICENSE
+      - name: '>> test & publish adapter / ${{ matrix.adapter }} <<'
+        id: publish
+        uses: k-paxian/dart-package-publisher@master
+        with:
+          credentialJson: ${{ secrets.CREDENTIAL_JSON }}
+          relativePath: adapters/${{ matrix.adapter }}
+      - name: 'Commit release tag'
+        if: steps.publish.outputs.success
+        uses: hole19/git-tag-action@master
+        env:
+          TAG: ${{steps.publish.outputs.package}}-${{steps.publish.outputs.localVersion}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

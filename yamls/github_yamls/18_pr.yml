@@ -1,0 +1,25 @@
+name: Pull Request
+
+on: pull_request
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1.1.0
+        with:
+          version: 12.x
+      - run: git config --global user.email "me@imbhargav5.com"
+      - run: git config --global user.name "Bhargav Ponnapalli"
+      - name: Installs yarn
+        run: npm i -g yarn
+      - name: Install now
+        run: now --version || npm i -g now
+      - name: yarn install and build
+        run: |
+          yarn
+          yarn build:action
+      - name: test
+        run: yarn test

@@ -1,0 +1,158 @@
+version: 2.1
+
+commands:
+  install_dependencies:
+    description: "Install dependencies and save cache"
+    parameters:
+      key:
+        type: integer
+    steps:
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-waffle-<< parameters.key >>-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install dependencies
+          command: yarn install --frozen-lockfile
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-waffle-<< parameters.key >>-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+  setup_solc:
+    steps:
+      - run:
+          name: Setup native solc
+          command: sudo cp ~/project/.circleci/solc /bin
+
+
+jobs:
+  lint:
+    docker:
+      - image: circleci/node:11.15
+    steps:
+      - checkout
+      - install_dependencies:
+          key: 11
+      - run: yarn lint
+
+  test_node_10:
+    docker:
+      - image: circleci/node:10.18
+    steps:
+      - checkout
+      - setup_remote_docker
+      - install_dependencies:
+          key: 10
+      - setup_solc
+      - run: yarn build
+      - run: yarn test
+
+  test_node_11:
+    docker:
+      - image: circleci/node:11.15
+    steps:
+      - checkout
+      - setup_remote_docker
+      - install_dependencies:
+          key: 11
+      - setup_solc
+      - run: yarn build
+      - run: yarn test
+
+  example_mock_contracts:
+    working_directory: ~/project/examples/mock-contracts
+    docker:
+      - image: circleci/node:11.15
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Install dependencies
+          command: yarn install
+      - run: yarn lint
+      - run: yarn build
+      - run: yarn test
+
+  example_change_balance:
+    working_directory: ~/project/examples/change-balance
+    docker:
+      - image: circleci/node:11.15
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Install dependencies
+          command: yarn install
+      - run: yarn lint
+      - run: yarn test
+
+  example_basic:
+    working_directory: ~/project/examples/basic
+    docker:
+      - image: circleci/node:11.15
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Install dependencies
+          command: yarn install
+      - run: yarn lint
+      - run: yarn build
+      - run: yarn test
+
+  example_called_on_contract:
+    working_directory: ~/project/examples/called-on-contract
+    docker:
+      - image: circleci/node:11.15
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Install dependencies
+          command: yarn install
+      - run: yarn lint
+      - run: yarn build
+      - run: yarn test
+
+  example_ens:
+    working_directory: ~/project/examples/ens
+    docker:
+      - image: circleci/node:11.15
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Install dependencies
+          command: yarn install
+      - run: yarn lint
+      - run: yarn test
+
+  docs:
+    working_directory: ~/project/docs
+    docker:
+      - image: circleci/python:latest
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Install dependencies
+          command:
+            pip install -r requirements.txt
+      - run:
+          name: Make html
+          command:
+            make html
+
+workflows:
+  waffle_all:
+    jobs:
+      - lint
+      - test_node_10
+      - test_node_11
+      - example_mock_contracts
+      - example_change_balance
+      - example_basic
+      - example_called_on_contract
+      - example_ens
+      - docs

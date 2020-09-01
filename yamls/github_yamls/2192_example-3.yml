@@ -1,0 +1,49 @@
+name: "Example 3: Other options"
+
+on:
+  pull_request:
+    branches:
+    - '*'
+  push:
+    branches:
+    - 'master'
+
+jobs:
+  example-3:
+    name: Ex3 Linux
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        with:
+          activate-environment: anaconda-client-env
+          environment-file: etc/example-environment.yml
+          python-version: 3.8
+          condarc-file: etc/example-condarc.yml
+          auto-activate-base: false
+          auto-update-conda: true
+      - shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+          printenv | sort
+
+
+  example-3-no-name:
+    name: Ex3-no-name Linux
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        with:
+          activate-environment: anaconda-client-env
+          environment-file: etc/example-environment-no-name.yml
+          python-version: 3.8
+          condarc-file: etc/example-condarc.yml
+          auto-activate-base: false
+          auto-update-conda: true
+      - shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+          printenv | sort

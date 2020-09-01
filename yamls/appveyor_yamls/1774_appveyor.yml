@@ -1,0 +1,25 @@
+# whitelist long living branches
+branches:
+  only:
+    - master
+    # Minor version branches: 0.9, 0.10 etc.
+    - /^0\.[0-9]+$/
+
+environment:
+  matrix:
+    - nodejs_version: "12"
+
+install:
+  - ps: Install-Product node $env:nodejs_version
+  - node --version
+  - npm --version
+  - yarn --version
+  - yarn install
+
+build_script:
+  - yarn build
+
+test_script:
+  - yarn test
+  # Edge is not available on Windows Server
+  # - yarn run lerna run test-edge

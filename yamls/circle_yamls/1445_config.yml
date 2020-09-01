@@ -1,0 +1,45 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6
+    working_directory: ~/PyTorch-BigGraph
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: source-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .git
+      - restore_cache:
+          keys:
+            - pip-cache-v1-{{ arch }}-{{ .Branch }}-
+            - pip-cache-v1-{{ arch }}-
+            - pip-cache-v1-
+      - run:
+          name: Install PyTorch-BigGraph
+          command: |
+            python3 -m venv ~/venv
+            . ~/venv/bin/activate
+            pip install pip --upgrade --upgrade-strategy eager
+            pip install numpy
+            pip install torch --no-index --find-links https://download.pytorch.org/whl/cpu/torch_stable.html --no-deps --upgrade --upgrade-strategy eager --progress-bar off
+            pip install . --upgrade --upgrade-strategy eager --progress-bar off
+            pip freeze > ~/pip_freeze.txt
+      - save_cache:
+          key: pip-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "~/pip_freeze.txt" }}
+          paths:
+            - ~/.cache/pip
+      - run:
+          name: Test all the things!
+          command: |
+            . ~/venv/bin/activate
+            CIRCLECI_TEST=1 python3 setup.py test

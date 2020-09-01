@@ -1,0 +1,181 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test-deploy:
+    name: Test and deploy
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        go: [1.14]
+        os: [ubuntu-latest, macos-latest]
+        upload-coverage: [true]
+        include:
+          - go: 1.13
+            os: ubuntu-latest
+            upload-coverage: false
+          - go: 1.14
+            os: windows-latest
+            upload-coverage: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Build for Linux/macOS
+        if: startsWith(matrix.os, 'windows-') != true
+        run: go build -ldflags "-s -w -X github.com/drakkan/sftpgo/version.commit=`git describe --always --dirty` -X github.com/drakkan/sftpgo/version.date=`date -u +%FT%TZ`" -o sftpgo
+
+      - name: Build for Windows
+        if: startsWith(matrix.os, 'windows-')
+        run: |
+          $GIT_COMMIT = (git describe --always --dirty) | Out-String
+          $DATE_TIME = ([datetime]::Now.ToUniversalTime().toString("yyyy-MM-ddTHH:mm:ssZ")) | Out-String
+          go build -ldflags "-s -w -X github.com/drakkan/sftpgo/version.commit=$GIT_COMMIT -X github.com/drakkan/sftpgo/version.date=$DATE_TIME" -o sftpgo.exe
+
+      - name: Initialize data provider
+        run: ./sftpgo initprovider
+        shell: bash
+
+      - name: Run test cases using SQLite provider
+        run: go test -v -timeout 5m ./... -coverprofile=coverage.txt -covermode=atomic
+
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.upload-coverage }}
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.txt
+          fail_ci_if_error: false
+
+      - name: Run test cases using bolt provider
+        run: |
+          go test -v -timeout 1m ./config -covermode=atomic
+          go test -v -timeout 1m ./common -covermode=atomic
+          go test -v -timeout 5m ./httpd -covermode=atomic
+          go test -v -timeout 5m ./sftpd -covermode=atomic
+          go test -v -timeout 5m ./ftpd -covermode=atomic
+        env:
+          SFTPGO_DATA_PROVIDER__DRIVER: bolt
+          SFTPGO_DATA_PROVIDER__NAME: 'sftpgo_bolt.db'
+
+      - name: Run test cases using memory provider
+        run: go test -v -timeout 5m ./... -covermode=atomic
+        env:
+          SFTPGO_DATA_PROVIDER__DRIVER: memory
+          SFTPGO_DATA_PROVIDER__NAME: ''
+
+      - name: Prepare build artifact for Linux/macOS
+        if: startsWith(matrix.os, 'windows-') != true
+        run: |
+          mkdir -p output/{bash_completion,zsh_completion}
+          cp sftpgo output/
+          cp sftpgo.json output/
+          cp -r templates output/
+          cp -r static output/
+          ./sftpgo gen completion bash > output/bash_completion/sftpgo-completion.bash
+          ./sftpgo gen completion zsh > output/zsh_completion/_sftpgo
+          ./sftpgo gen man -d output/man/man1
+          gzip output/man/man1/*
+
+      - name: Prepare build artifact for Windows
+        if: startsWith(matrix.os, 'windows-')
+        run: |
+          mkdir output
+          copy .\sftpgo.exe .\output
+          copy .\sftpgo.json .\output
+          mkdir output\templates
+          xcopy .\templates .\output\templates\ /E
+          mkdir output\static
+          xcopy .\static .\output\static\ /E
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: sftpgo-${{ matrix.os }}-go${{ matrix.go }}
+          path: output
+
+  test-postgresql-mysql:
+    name: Test with PostgreSQL/MySQL
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sftpgo
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      mariadb:
+        image: mariadb:latest
+        env:
+          MYSQL_ROOT_PASSWORD: mysql
+          MYSQL_DATABASE: sftpgo
+          MYSQL_USER: sftpgo
+          MYSQL_PASSWORD: sftpgo
+        options: >-
+          --health-cmd "mysqladmin status -h 127.0.0.1 -P 3306 -u root -p$MYSQL_ROOT_PASSWORD"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 6
+        ports:
+          - 3307:3306
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+
+      - name: Build
+        run: go build -ldflags "-s -w -X github.com/drakkan/sftpgo/version.commit=`git describe --always --dirty` -X github.com/drakkan/sftpgo/version.date=`date -u +%FT%TZ`" -o sftpgo
+
+      - name: Run tests using PostgreSQL provider
+        run: |
+          ./sftpgo initprovider
+          go test -v -timeout 5m ./... -covermode=atomic
+        env:
+          SFTPGO_DATA_PROVIDER__DRIVER: postgresql
+          SFTPGO_DATA_PROVIDER__NAME: sftpgo
+          SFTPGO_DATA_PROVIDER__HOST: localhost
+          SFTPGO_DATA_PROVIDER__PORT: 5432
+          SFTPGO_DATA_PROVIDER__USERNAME: postgres
+          SFTPGO_DATA_PROVIDER__PASSWORD: postgres
+
+      - name: Run tests using MySQL provider
+        run: |
+          ./sftpgo initprovider
+          go test -v -timeout 5m ./... -covermode=atomic
+        env:
+          SFTPGO_DATA_PROVIDER__DRIVER: mysql
+          SFTPGO_DATA_PROVIDER__NAME: sftpgo
+          SFTPGO_DATA_PROVIDER__HOST: localhost
+          SFTPGO_DATA_PROVIDER__PORT: 3307
+          SFTPGO_DATA_PROVIDER__USERNAME: sftpgo
+          SFTPGO_DATA_PROVIDER__PASSWORD: sftpgo
+
+  golangci-lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v1
+        with:
+          version: v1.29

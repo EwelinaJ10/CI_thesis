@@ -1,0 +1,162 @@
+---
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build_macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Test
+        run: cargo test
+
+      - name: Build
+        run: cargo build --release --target=x86_64-apple-darwin
+
+      - name: Package Artifacts
+        run: |-
+          zip -j artifacts/sad-macos.zip target/x86_64-apple-darwin/release/sad
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: sad-macos
+          path: artifacts/sad-macos.zip
+
+  build_ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: ./ci/docker.py linux
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: sad-linux
+          path: artifacts/sad-linux.zip
+
+  build_debs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: ./ci/docker.py deb
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: sad-deb
+          path: artifacts/sad.deb
+
+  release:
+    needs:
+      - build_macos
+      - build_ubuntu
+      - build_debs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download Artifacts macos
+        uses: actions/download-artifact@v2
+        with:
+          name: sad-macos
+          path: artifacts
+
+      - name: Download Artifacts ubuntu
+        uses: actions/download-artifact@v2
+        with:
+          name: sad-linux
+          path: artifacts
+
+      - name: Download Artifacts debian deb
+        uses: actions/download-artifact@v2
+        with:
+          name: sad-deb
+          path: artifacts
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+
+      - name: Pip Packages
+        run: ./ci/pip.sh
+
+      - name: Set ENV
+        id: set_env
+        run: ./ci/ci.py --release
+
+      - name: Create Release
+        id: new_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ fromJSON(steps.set_env.outputs.RELEASE_INFO).tag_name }}
+          release_name: ${{ fromJSON(steps.set_env.outputs.RELEASE_INFO).release_name }}
+          body: ${{ fromJSON(steps.set_env.outputs.RELEASE_INFO).release_notes }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Asset - Macos
+        id: asset_macos
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.new_release.outputs.upload_url }}
+          asset_content_type: application/zip
+          asset_path: artifacts/sad-macos.zip
+          asset_name: x86_64-apple-darwin.zip
+
+      - name: Upload Asset - Ubuntu
+        id: asset_ubuntu
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.new_release.outputs.upload_url }}
+          asset_content_type: application/zip
+          asset_path: artifacts/sad-linux.zip
+          asset_name: x86_64-unknown-linux-gnu.zip
+
+      - name: Upload Asset - Debian deb
+        id: asset_debian
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.new_release.outputs.upload_url }}
+          asset_content_type: application/vnd.debian.binary-package
+          asset_path: artifacts/sad.deb
+          asset_name: x86_64-unknown-linux-gnu.deb
+
+      - name: Homebrew
+        env:
+          CI_TOKEN: ${{ secrets.CI_TOKEN }}
+        run: >-
+          ./ci/release.py
+          --brew-artifact=sad-macos.zip
+          --brew-uri=${{ steps.asset_macos.outputs.browser_download_url }}
+
+      - name: Snapcraft
+        env:
+          CI_TOKEN: ${{ secrets.CI_TOKEN }}
+        run: >-
+          ./ci/release.py
+          --snapcraft
+

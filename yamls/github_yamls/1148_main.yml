@@ -1,0 +1,29 @@
+name: easy-wg-quick workflow
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron:  '0 0 * * *'
+
+jobs:
+  build:
+    name: sca check
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@master
+      - name: shellcheck
+        uses: ./.github/actions/shellcheck
+      - name: checkbashisms
+        uses: ./.github/actions/checkbashisms
+  test:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@master
+      - name: unit tests
+        uses: ./.github/actions/bats
+      - name: test run
+        uses: ./.github/actions/testrun

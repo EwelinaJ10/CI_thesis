@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/repo
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - sbt-scala-cache-{{ checksum "build.sbt" }}
+      - run: cat /dev/null | sbt +clean +test:compile
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/.ivy2
+          key: sbt-scala-cache-{{ checksum "build.sbt" }}
+      - run: |
+          if [ -n "$CODACY_PROJECT_TOKEN" ]; then
+            cat /dev/null | sbt coverage +test coverageReport coverageAggregate codacyCoverage
+          else
+            cat /dev/null | sbt coverage +test coverageReport coverageAggregate
+          fi

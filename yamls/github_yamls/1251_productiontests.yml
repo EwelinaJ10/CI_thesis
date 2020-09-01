@@ -1,0 +1,24 @@
+name: Production Tests
+
+on:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  # Note: Time is specified in UTC.
+  - cron:  '0 */12 * * *'
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Environment
+      run: env
+    - name: Checkout
+      run: |
+        git clone --recursive https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
+    - name: Build base containers
+      run: ./setup.sh
+    - name: Run the tests
+      run: ./docker/docker-admin.sh production_test

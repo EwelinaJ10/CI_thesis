@@ -1,0 +1,187 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+
+# -------------------------------------------------------------------------------------
+# Environments to run the jobs in
+# -------------------------------------------------------------------------------------
+cpu: &cpu
+  environment:
+    TERM: xterm
+  machine:
+    image: default
+  resource_class: medium
+
+gpu: &gpu
+  environment:
+    CUDA_VERSION: "10.2"
+    TERM: xterm
+  machine:
+    image: default
+  resource_class: gpu.medium  # Tesla M60
+
+# -------------------------------------------------------------------------------------
+# Re-usable commands
+# -------------------------------------------------------------------------------------
+setup_venv: &setup_venv
+  - run:
+      name: Activate Venv
+      command: |
+        python -m venv ~/venv
+        echo ". ~/venv/bin/activate" >> $BASH_ENV
+        . ~/venv/bin/activate
+        python --version
+        which python
+        which pip
+
+install_python: &install_python
+  - run:
+      name: Install Python
+      working_directory: ~/
+      command: |
+        pyenv install 3.6.1
+        pyenv global 3.6.1
+
+install_dep: &install_dep
+  - run:
+      name: Install Dependencies
+      command: |
+        which python
+        which pip
+        pip install --upgrade pip
+        pip install --upgrade --progress-bar off setuptools
+        pip install --progress-bar off -r requirements.txt
+        pip list
+
+install_dev_dep: &install_dev_dep
+  - run:
+      name: Install Dev Dependencies
+      command: |
+        pip install .[dev]
+
+pip_list: &pip_list
+  - run:
+      name: Pip list
+      command: |
+        pip list
+
+run_tests: &run_tests
+  - run:
+      name: Run Tests
+      command: |
+        python setup.py test -s test.suites.unittests -v
+
+# -------------------------------------------------------------------------------------
+# Jobs to run
+# -------------------------------------------------------------------------------------
+jobs:
+  cpu_tests:
+    <<: *cpu
+
+    working_directory: ~/ClassyVision
+
+    steps:
+      - checkout
+
+      - <<: *install_python
+
+      - <<: *setup_venv
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v4-cpu-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v4-cpu-dependencies-
+
+      - <<: *install_dep
+
+      - <<: *install_dev_dep
+
+      - <<: *pip_list
+
+      - save_cache:
+          paths:
+            - ~/venv
+          key: v4-cpu-dependencies-{{ checksum "requirements.txt" }}
+
+      - <<: *run_tests
+
+      - run:
+          name: Run classy-project tests
+          command: |
+            pip install .
+            classy-project my-project
+            pushd my-project
+            ./classy_train.py --config configs/template_config.json
+            popd
+            rm -rf my-project
+
+      - run:
+          name: Check formatting
+          working_directory: ~/ClassyVision/
+          command: |
+            bash ./scripts/formatter.sh
+
+
+  gpu_tests:
+    <<: *gpu
+
+    working_directory: ~/ClassyVision
+
+    steps:
+      - checkout
+
+      - run:
+          name: Setup CUDA
+          working_directory: ~/
+          command: |
+            # download and install nvidia drivers, cuda, etc
+            wget --quiet --no-clobber -P ~/nvidia-downloads 'https://pytorch-ci-utils.s3.us-east-2.amazonaws.com/nvidia-drivers/NVIDIA-Linux-x86_64-440.64.run'
+            wget --quiet --no-clobber -P ~/nvidia-downloads 'https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-ubuntu1604.pin'
+            wget --quiet --no-clobber -P ~/nvidia-downloads 'http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda-repo-ubuntu1604-10-2-local-10.2.89-440.33.01_1.0-1_amd64.deb'
+            sudo cp ~/nvidia-downloads/cuda-ubuntu1604.pin /etc/apt/preferences.d/cuda-repository-pin-600
+            time sudo /bin/bash ~/nvidia-downloads/NVIDIA-Linux-x86_64-440.64.run --no-drm -q --ui=none
+            time sudo dpkg -i ~/nvidia-downloads/cuda-repo-ubuntu1604-10-2-local-10.2.89-440.33.01_1.0-1_amd64.deb
+            nvidia-smi
+
+      - <<: *install_python
+
+      - <<: *setup_venv
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v2-gpu-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v2-gpu-dependencies-
+
+      - <<: *install_dep
+
+      - <<: *install_dev_dep
+
+      - <<: *pip_list
+
+      - run:
+          name: Check CUDA Available
+          command: python -c "import torch; assert torch.cuda.is_available(), 'CUDA not available'"
+
+      - save_cache:
+          paths:
+            - ~/venv
+          key: v2-gpu-dependencies-{{ checksum "requirements.txt" }}
+
+      - <<: *run_tests
+
+
+# -------------------------------------------------------------------------------------
+# Workflows
+# -------------------------------------------------------------------------------------
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - cpu_tests
+      - gpu_tests

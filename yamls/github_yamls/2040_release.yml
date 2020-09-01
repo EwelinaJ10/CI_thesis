@@ -1,0 +1,132 @@
+name: Release
+on:
+  push:
+    tags:
+      - '*.*.*'
+jobs:
+  release-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build
+        run: |
+          cargo build --release --target x86_64-unknown-linux-gnu
+          mv target/x86_64-unknown-linux-gnu/release/dotenv-linter ./dotenv-linter
+          chmod +x dotenv-linter
+          tar -czf dotenv-linter-linux-x86_64.tar.gz dotenv-linter
+          rm dotenv-linter
+
+          rustup target add x86_64-unknown-linux-musl
+          cargo build --release --target x86_64-unknown-linux-musl
+          mv target/x86_64-unknown-linux-musl/release/dotenv-linter ./dotenv-linter
+          chmod +x dotenv-linter
+          tar -czf dotenv-linter-alpine-x86_64.tar.gz dotenv-linter
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dotenv-linter-*
+          draft: true
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-darwin:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build
+        run: |
+          cargo build --release --target x86_64-apple-darwin
+          mv target/x86_64-apple-darwin/release/dotenv-linter ./dotenv-linter
+          chmod +x dotenv-linter
+          tar -czf dotenv-linter-darwin-x86_64.tar.gz dotenv-linter
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dotenv-linter-*
+          draft: true
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build and push image
+        run: |
+          GIT_TAG=$(git describe --tags `git rev-list --tags --max-count=1` | sed "s/v//")
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+          docker build -t dotenvlinter/dotenv-linter:${GIT_TAG} .
+          docker push dotenvlinter/dotenv-linter:${GIT_TAG}
+
+          docker build -t dotenvlinter/dotenv-linter:latest .
+          docker push dotenvlinter/dotenv-linter:latest
+
+  release-crate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build and publish to crates.io
+        run: |
+          cargo login ${{ secrets.CRATES_TOKEN }}
+          cargo publish
+
+  release-aur:
+    runs-on: ubuntu-latest
+    container: archlinux/base
+
+    steps:
+      # see: https://github.community/t5/GitHub-Actions/How-to-get-just-the-tag-name/m-p/32167#M1027
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Build and publish to aur.archlinux.org
+        run: |
+          pacman -Sy --needed --noconfirm sudo git binutils openssh && \
+          useradd builduser -m && \
+          su builduser -c "
+            mkdir ~/.ssh && \
+            echo \"${{ secrets.SSH_PUBLIC_KEY }}\" > ~/.ssh/id_rsa.pub && \
+            echo \"${{ secrets.SSH_PRIVATE_KEY }}\" > ~/.ssh/id_rsa && \
+            chmod 600 ~/.ssh/id_rsa && \
+            ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts && \
+            git config --global user.email \"work@mgrachev.com\" && \
+            git config --global user.name \"Dotenv Linter\" && \
+            cd ~ && \
+            git clone ssh://aur@aur.archlinux.org/dotenv-linter-bin.git && \
+            cd dotenv-linter-bin && \
+            sed -i \"s/pkgver=.*/pkgver=${{ steps.get_version.outputs.VERSION }}/\" PKGBUILD && \
+            makepkg --printsrcinfo > .SRCINFO
+            git status && \
+            git diff && \
+            git add . && \
+            git commit -m 'release ${{ steps.get_version.outputs.VERSION }}' && \
+            git push origin master
+          "
+
+  release-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build
+        shell: powershell
+        run: |
+          cargo build --release --target x86_64-pc-windows-msvc
+          Compress-Archive -Path ".\target\x86_64-pc-windows-msvc\release\dotenv-linter.exe" -DestinationPath ".\dotenv-linter-win-x64.zip"
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dotenv-linter-*
+          draft: true
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

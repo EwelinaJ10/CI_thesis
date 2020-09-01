@@ -1,0 +1,143 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+
+defaults: &defaults
+  docker:
+    # Choose the version of Node you want here
+    - image: circleci/node:10.11
+  working_directory: ~/repo
+
+mac: &mac
+  macos:
+    xcode: "10.1.0"
+  working_directory: ~/repo
+  environment:
+    FL_OUTPUT_DIR: output
+  shell: /bin/bash --login -o pipefail
+
+version: 2
+jobs:
+  setup:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-node-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-node-
+      - run:
+          name: Install dependencies
+          command: NOYARNPOSTINSTALL=1 yarn install
+      - save_cache:
+          name: Save node modules
+          paths:
+            - node_modules
+          key: v1-dependencies-node-{{ checksum "package.json" }}
+
+  tests:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore npm cache
+          keys:
+            - v1-dependencies-node-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-node-
+      - run:
+          name: Run tests
+          command: yarn ci:test # this command will be added to/found in your package.json scripts
+
+  deploy_ios:
+    <<: *mac
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            — “99:92:b0:c2:30:72:ca:28:0d:d5:d4:61:20:0e:f9:b3”
+      - run:
+          name: Git configuration
+          command: git config user.email "ci@infinite.red" && git config user.name "CircleCI"
+      - run:
+          name: Set upstream branch
+          command: git branch --set-upstream-to origin ${CIRCLE_BRANCH}
+      # Node modules
+      - restore_cache:
+          name: Restore node modules
+          keys:
+            - v1-dependencies-mac-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-mac-
+      - run:
+          name: Install dependencies
+          command: NOYARNPOSTINSTALL=1 yarn install
+      - save_cache:
+          name: Save node modules
+          paths:
+            - node_modules
+          key: v1-dependencies-mac-{{ checksum "package.json" }}
+
+      # Cocoapods
+      - run:
+          name: Fetch CocoaPods Specs
+          command: |
+            curl https://cocoapods-specs.circleci.com/fetch-cocoapods-repo-from-s3.sh | bash -s cf
+      - run:
+          working_directory: ios
+          name: Install CocoaPods
+          command: pod install --verbose
+
+      # Gems
+      - restore_cache:
+          name: Restore gems
+          key: bundle-v1-{{ checksum "ios/Gemfile.lock" }}-{{ arch }}
+      - run:
+          name: Bundle Install
+          command: bundle install
+          working_directory: ios
+      - save_cache:
+          key: bundle-v1-{{ checksum "ios/Gemfile.lock" }}-{{ arch }}
+          paths:
+            - vendor/bundle
+
+      # Misc setup
+      - run:
+          name: Misc setup
+          command: yarn ci:setup
+
+      # Git grooming
+      - run:
+          name: Pull latest git
+          command: git stash && git pull && git stash pop
+
+      # Run Fastlane
+      - run:
+          working_directory: ios
+          name: Fastlane
+          command: bundle exec fastlane ios beta
+
+      # Git cleanup
+      - run:
+          name: Pull latest git
+          command: git stash && git pull && git stash pop
+      - run:
+          name: Push version bump commit
+          command: git push
+      - store_artifacts:
+          path: output
+
+workflows:
+  version: 2
+  test_and_release:
+    jobs:
+      - setup
+      - tests:
+          requires:
+            - setup
+      # - deploy_ios:
+      #     filters:
+      #       branches:
+      #         only: master

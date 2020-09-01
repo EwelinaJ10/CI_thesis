@@ -1,0 +1,32 @@
+name: "Example 4: Channels"
+
+on:
+  pull_request:
+    branches:
+    - '*'
+  push:
+    branches:
+    - 'master'
+
+jobs:
+  example-4:
+    name: Ex4 Linux
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        with:
+          activate-environment: foo
+          python-version: 3.6
+          channels: conda-forge,spyder-ide
+          allow-softlinks: true
+          channel-priority: true
+          show-channel-urls: true
+          use-only-tar-bz2: true
+      - shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+          conda config --show-sources
+          conda config --show
+          printenv | sort

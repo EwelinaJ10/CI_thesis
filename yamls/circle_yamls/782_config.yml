@@ -1,0 +1,123 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+
+jobs:
+  install:
+    <<: *defaults
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-deps-{{ checksum "yarn.lock" }}
+            - v1-dep
+      - run: yarn
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-deps-{{ checksum "yarn.lock" }}
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - .
+
+  test_on_node12:
+    <<: *defaults
+    docker:
+      - image: circleci/node:12-browsers
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Test
+          command: yarn coverage
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - .
+
+  test_on_node14:
+    <<: *defaults
+    docker:
+      - image: circleci/node:14-browsers
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Test
+          command: yarn test
+
+  coverage:
+    <<: *defaults
+    docker:
+      - image: circleci/node:12
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run: yarn codecov
+
+  docs:
+    <<: *defaults
+    docker:
+      - image: circleci/node:12
+    working_directory: ~/repo
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "78:6d:b3:d4:3b:49:10:34:d8:65:65:b6:06:ff:a0:e0"
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Prepare Git history
+          command: |
+            echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+            mkdir gh-pages
+            cd gh-pages
+            git init
+            git remote add origin git@github.com:g-plane/rize.git
+            git checkout -b gh-pages
+            git pull origin gh-pages
+            git config --global user.name "Pig Fang"
+            git config --global user.email "g-plane@hotmail.com"
+            cd ..
+      - run:
+          name: Generate docs
+          command: yarn build:docs
+      - run:
+          name: Publish
+          command: |
+            cp -r docs/.vuepress/dist/** gh-pages
+            cd gh-pages
+            git add .
+            git commit --allow-empty -m "Build docs at $CIRCLE_SHA1 [skip ci]"
+            if [ $CIRCLE_PULL_REQUEST ]; then
+              echo "\u001B[43m\u001B[30mThis is a pull request. Skip publishing docs.\u001B[39m\u001B[49m"
+            else
+              git push origin gh-pages
+            fi
+
+workflows:
+  version: 2
+  testing:
+    jobs:
+      - install:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+      - test_on_node12:
+          requires:
+            - install
+      - test_on_node14:
+          requires:
+            - install
+      - coverage:
+          requires:
+            - test_on_node12
+      - docs:
+          requires:
+            - install

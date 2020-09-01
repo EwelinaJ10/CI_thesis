@@ -1,0 +1,17 @@
+name: Deploy to github pages
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Deploy to github pages
+        env:
+          GH_TOKEN: ${{secrets.DEPLOY_SECRET}}
+        run: |
+          npm install
+          npm run prepare
+          npm run deploy

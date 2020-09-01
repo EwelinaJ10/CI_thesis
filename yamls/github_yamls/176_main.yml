@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js 12
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: node_modules Cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Patch workers (fixes android build)
+        run: sudo sysctl fs.inotify.max_user_instances=524288 && sudo sysctl fs.inotify.max_user_watches=524288 && sudo sysctl fs.inotify.max_queued_events=524288 && sudo sysctl -p
+
+      - name: Setup java 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: '1.8'
+          architecture: x64 // (x64 or x86) - defaults to x64
+
+      - name: Build android
+        run: yarn android:release
+
+      - name: Build web
+        run: yarn web:release
+
+      - name: Setup wine for windows build
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends software-properties-common && sudo dpkg --add-architecture i386 && sudo curl -L https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/Release.key > winehq.key && sudo apt-key add winehq.key && sudo apt-add-repository 'deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/ ./'
+          sudo apt-get update
+          sudo apt-get -y purge software-properties-common libdbus-glib-1-2 python3-dbus python3-gi python3-pycurl python3-software-properties
+          sudo apt-get install -y --no-install-recommends winehq-stable
+          sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/* && sudo unlink winehq.key
+          sudo curl -L https://github.com/electron-userland/electron-builder-binaries/releases/download/wine-2.0.3-mac-10.13/wine-home.zip > /tmp/wine-home.zip && sudo unzip /tmp/wine-home.zip -d /root/.wine && sudo unlink /tmp/wine-home.zip
+
+      - name: Build desktop
+        run: yarn desktop:release
+
+      - name: Deploy to github pages
+        if: success()
+        uses: crazy-max/ghaction-github-pages@v1
+        with:
+          target_branch: gh-pages
+          build_dir: web/build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            android/app/build/outputs/apk/release/*.apk
+            desktop/dist/*.dmg
+            desktop/dist/*.exe
+            desktop/dist/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

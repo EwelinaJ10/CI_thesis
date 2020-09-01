@@ -1,0 +1,59 @@
+#
+# Wordless: CI - AppVeyor
+#
+# Copyright (C) 2018-2020  Ye Lei (叶磊)
+#
+# This source file is licensed under GNU GPLv3.
+# For details, see: https://github.com/BLKSerene/Wordless/blob/master/LICENSE.txt
+#
+# All other rights reserved.
+#
+
+version: 1.4.0.{build}
+
+environment:
+  matrix:
+    # Windows
+    - APPVEYOR_BUILD_WORKER_IMAGE: "Visual Studio 2019"
+      PYTHON: "C:/Python37-x64"
+    # MacOS
+    - APPVEYOR_BUILD_WORKER_IMAGE: "macos-mojave"
+      PYTHON: "~/venv3.7"
+    # Linux
+    - APPVEYOR_BUILD_WORKER_IMAGE: "Ubuntu1604"
+      PYTHON: "$HOME/venv3.7"
+
+cache:
+  # Windows
+  - "%LOCALAPPDATA%/pip/Cache"
+  # macOS
+  - "/Users/appveyor/Library/Caches/pip"
+  # Linux
+  - "/home/appveyor/.cache/pip"
+
+stack: python 3.7.7
+
+install:
+  - cmd: set PATH=%PYTHON%;%PYTHON%/Scripts;%PATH%
+  # Check Python version
+  - python --version
+  # Install dependencies
+  - python -m pip install --upgrade pip
+  - pip install -r requirements.txt
+  # Download data
+  - python downloaders/wl_downloader_ci.py
+
+build: off
+
+before_test:
+  - cd src
+
+# Run tests
+test_script:
+  - pytest wl_tests/wl_text/test_sentence_tokenization.py
+  - pytest wl_tests/wl_text/test_word_tokenization.py
+  - pytest wl_tests/wl_text/test_word_detokenization.py
+  - pytest wl_tests/wl_text/test_pos_tagging.py
+  - pytest wl_tests/wl_text/test_lemmatization.py
+
+  - pytest --ignore=wl_tests/wl_text/test_sentence_tokenization.py --ignore=wl_tests/wl_text/test_word_tokenization.py --ignore=wl_tests/wl_text/test_word_detokenization.py --ignore=wl_tests/wl_text/test_pos_tagging.py --ignore=pytest wl_tests/wl_text/test_lemmatization.py

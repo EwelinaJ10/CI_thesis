@@ -1,0 +1,117 @@
+# GitHub Actions workflow for Lightkurve's continuous integration.
+#
+# This file configures six different jobs:
+# 1) pytest on Linux, Python 3.7.
+# 2) pytest on Linux, Python 3.8, with --remote-data enabled (i.e. get data from MAST).
+# 3) pytest on Linux, Python 3.8, without installing optional dependencies.
+# 4) pytest on Windows, Python 3.8, with --remote-data enabled.
+# 5) pytest on OSX, Python 3.8.
+# 6) flake8 syntax check.
+
+name: Lightkurve-tests
+
+on: [push, pull_request]
+
+jobs:
+
+  # Run unit tests on Linux
+  pytest-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        name: [3.6, 3.7, 3.8-remote-data, 3.8-no-optional-dependencies]
+        include:
+          - name: 3.6
+            python-version: 3.6
+            pip-command: pip install -e .[all,test]
+            pytest-command: pytest
+          - name: 3.7
+            python-version: 3.7
+            pip-command: pip install -e .[all,test]
+            pytest-command: pytest
+          - name: 3.8-remote-data
+            python-version: 3.8
+            pip-command: pip install -e .[all,test]
+            pytest-command: pytest --remote-data --doctest-modules
+          - name: 3.8-no-optional-dependencies
+            python-version: 3.8
+            pip-command: pip install -e .[test]
+            pytest-command: pytest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install numpy  # celerite needs numpy to build, so we install it first
+        ${{ matrix.pip-command }}
+    - name: Test with ${{ matrix.pytest-command }}
+      run: |
+        ${{ matrix.pytest-command }}
+
+  # Run unit tests on Windows
+  pytest-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        name: [3.8-remote-data]
+        python-version: [3.8]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install -e .[test]
+    - name: Test with pytest --remote-data
+      run: |
+        pytest --remote-data
+
+  # Run unit tests on Mac OSX
+  pytest-osx:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install -e .[all,test]
+    - name: Test with pytest
+      run: |
+        pytest
+
+  # Use the `flake8` tool to check for syntax errors
+  flake8-linter:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install flake8
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude="setup.py,test_*"
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude="setup.py,test_*"

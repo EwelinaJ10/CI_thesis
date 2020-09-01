@@ -1,0 +1,39 @@
+name: Dart CI
+
+on: [push, pull_request]
+
+jobs:
+  test-hive:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        test-platform: [vm, chrome]
+        dart-channel: [stable, unstable]
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Dart
+      run: |
+        sudo apt-get update
+        sudo apt-get install apt-transport-https
+        sudo sh -c 'wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+        sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_${{ matrix.dart-channel }}.list > /etc/apt/sources.list.d/dart_${{ matrix.dart-channel }}.list'
+        sudo apt-get update
+        sudo apt-get install dart
+    - name: Run tests
+      run: |
+        export PATH="$PATH:/usr/lib/dart/bin"
+        pub get
+        pub run test -p ${{ matrix.test-platform }}
+      working-directory: hive
+        
+  check-score:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: axel-op/dart_package_analyzer@stable
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          minAnnotationLevel: warning

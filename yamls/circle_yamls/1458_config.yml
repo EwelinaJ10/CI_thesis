@@ -1,0 +1,80 @@
+version: 2
+
+jobs:
+  build:
+    working_directory: ~/project
+    docker:
+      - image: owickstrom/komposition-stack-builder:ubuntu-18.04-lts-13.24
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: en_US.UTF-8
+    steps:
+      - checkout
+
+      - run:
+          name: Install native dependencies
+          command: |
+            apt update
+            apt install -y ffmpeg
+      - run:
+          name: Query resolver & ghc version
+          command: |
+            ./ci/resolver > resolver.version
+            ./ci/ghc-version $(cat resolver.version) >  ghc.version
+
+      - restore_cache:
+          keys:
+                - stack--{{ arch }}--{{ checksum "ghc.version" }}--{{ checksum "resolver.version" }}--{{ checksum "komposition.cabal" }}--{{ checksum "stack.yaml" }}
+                - stack--{{ arch }}--{{ checksum "ghc.version" }}--{{ checksum "resolver.version" }}--{{ checksum "komposition.cabal" }}
+                - stack--{{ arch }}--{{ checksum "ghc.version" }}--{{ checksum "resolver.version" }}--resolver
+                - stack--{{ arch }}--{{ checksum "ghc.version" }}--ghc
+
+      - run: stack setup
+
+      - save_cache:
+          key:    stack--{{ arch }}--{{ checksum "ghc.version" }}--ghc
+          paths:  [~/.stack, ~/project/.stack-work]
+
+      - run:
+          command: stack build --no-terminal --test --bench --only-dependencies -j1
+
+      - save_cache:
+          key:    stack--{{ arch }}--{{ checksum "ghc.version" }}--{{ checksum "resolver.version" }}--resolver
+          paths:  [~/.stack, ~/project/.stack-work]
+
+      - save_cache:
+          key:    stack--{{ arch }}--{{ checksum "ghc.version" }}--{{ checksum "resolver.version" }}--{{ checksum "komposition.cabal" }}
+          paths:  [~/.stack, ~/project/.stack-work]
+
+      - run:
+          command: stack build --no-terminal --test --no-run-tests --bench --no-run-benchmarks
+
+      - save_cache:
+          key:    stack--{{ arch }}--{{ checksum "ghc.version" }}--{{ checksum "resolver.version" }}--{{ checksum "komposition.cabal" }}--{{ checksum "stack.yaml" }}
+          paths:  [~/.stack, ~/project/.stack-work]
+
+      - run:
+          name: Running unit tests
+          command: stack test
+
+      - deploy:
+          command: |
+            stack install
+
+            if [ "$CIRCLE_PROJECT_USERNAME" == "owickstrom" ]; then
+              if [[ "$CIRCLE_BRANCH" == "master" ]]; then
+                echo 'TODO: release'
+              fi
+            fi
+
+      - store_artifacts:
+          path: ~/.local/bin/komposition
+
+workflows:
+  version: 2
+  build-test:
+    jobs:
+      - build
+      # - haddock:
+      #     requires:
+      #       - build

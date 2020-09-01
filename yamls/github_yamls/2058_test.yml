@@ -1,0 +1,43 @@
+name: CI
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - 'examples/*'
+      - 'extra/*'
+  pull_request:
+  schedule:
+    - cron: '0 12 1 * *'
+jobs:
+  test:
+    name: Checks/Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        emacs_version:
+          - '25.3'
+          - '26.3'
+          - snapshot
+        os:
+          - ubuntu-latest
+          - macos-latest
+    steps:
+      - uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: Setup checks
+        if: "!startsWith(matrix.emacs_version, '25')"
+        run: 'make setup-check'
+      - name: Run checks
+        run: 'make check'
+        if: "!startsWith(matrix.emacs_version, '25')"
+      - name: Setup unit testing
+        run: 'make setup-tests'
+      - name: Run ERT unit tests
+        env:
+          WAIT_TIME: 3
+        run: 'make test'

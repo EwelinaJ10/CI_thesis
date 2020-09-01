@@ -1,0 +1,40 @@
+image: Visual Studio 2019
+
+# Version format
+version: 1.2.4.{build}
+
+init:
+  - git config --global core.autocrlf true
+
+# Environment
+environment:
+  VIPS_VERSION: "8.10.0"
+  VIPS_PRE_VERSION: "rc1"
+  VIPS_WARNING: 0
+
+# Build script
+build_script:
+  - ps: .\build.ps1 --package
+
+# Do not build on tags (GitHub only)
+skip_tags: true
+
+pull_requests:
+  do_not_increment_build_number: true
+
+# Disable automatic tests and deployment
+test: off
+deploy: off
+
+# Branches to build
+branches:
+  # Blocklist
+  except:
+    - gh-pages
+
+# Build cache
+cache:
+- download -> appveyor.yml
+
+artifacts:
+  - path: '**\NetVips.*.nupkg' # find all NuGet packages recursively

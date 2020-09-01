@@ -1,0 +1,240 @@
+# Clojure CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-clojure/ for more details
+#
+orbs:
+  aws-ecr: circleci/aws-ecr@6.7.0
+  aws-s3: circleci/aws-s3@1.0.15
+  crux:
+    orbs:
+      go: circleci/go@0.2.0
+      docker: circleci/docker@0.5.20
+    commands:
+      deploy-artifacts:
+        parameters:
+          crux-edn:
+            type: string
+          deps-edn:
+            type: string
+          artifact-name:
+            type: string
+        steps:
+          - docker/install-docker
+          - setup_remote_docker:
+              docker_layer_caching: true
+
+          - run:
+              command: |
+                cd crux-build
+                DEPS_EDN=<<parameters.deps-edn>> CRUX_EDN=<<parameters.crux-edn>> ./build-tar.sh
+                cd crux-builder/clj-uberjar/
+                UBERJAR_NAME=<<parameters.artifact-name>>.jar ./build-uberjar.sh
+
+          - store_artifacts:
+              path: "~/crux/crux-build/crux-builder/clj-uberjar/<<parameters.artifact-name>>.jar"
+              destination: "<<parameters.artifact-name>>.jar"
+
+          - run:
+              command: |
+                export IMAGE_NAME=juxt/<<parameters.artifact-name>>
+                cd crux-build/crux-builder/docker/
+                IMAGE_NAME="${IMAGE_NAME}" IMAGE_VERSION="${CIRCLE_TAG}" ./build-docker.sh
+                echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                docker push "${IMAGE_NAME}:${CIRCLE_TAG}"
+      deploy-tar:
+        steps:
+          - run:
+              command: |
+                cd crux-build
+                ./build-tar.sh
+          - store_artifacts:
+              path: ~/crux/crux-build/crux-builder.tar.gz
+              destination: crux-builder.tar.gz
+
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/clojure:lein-2.9.1
+
+    working_directory: ~/crux
+
+    environment:
+      LEIN_ROOT: "true"
+      JVM_OPTS: -Xmx3200m
+
+    steps:
+      - checkout
+
+      - run: md5sum **/project.clj > .circleci-cache-key
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum ".circleci-cache-key" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          command: |
+            export LEIN_JVM_OPTS=-Xmx2G
+            lein sub install
+
+      # one for when we can get CircleCI Clojars deploys working again
+      # - run: ./.circleci/bin/deploy_clojars.sh
+      - persist_to_workspace:
+          root: ~/
+          paths: ./
+
+  test:
+    docker:
+      - image: circleci/clojure:lein-2.9.1
+
+    working_directory: ~/crux
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run: lein do sub test, check
+      - store_test_results:
+          path: "crux-test/target/test-results"
+      - run: rm -rf ~/.m2/juxt/crux-*
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum ".circleci-cache-key" }}
+
+  deploy-commit:
+    docker:
+      - image: circleci/clojure:lein-2.9.1
+
+    working_directory: ~/crux
+    steps:
+        - checkout
+        - attach_workspace:
+            at: ~/
+
+        - run: md5sum ~/crux/crux-bench/bin/download-dataset.sh > .circleci-bench-dataset-cache-key
+        - restore_cache:
+            keys:
+              - v1-dataset-{{ checksum ".circleci-bench-dataset-cache-key" }}
+              # fallback to using the latest cache if no exact match is found
+              - v1-dataset-
+
+        - run:
+            command: |
+              export LEIN_JVM_OPTS=-Xmx2G
+              lein sub install
+
+        - run: sh ./crux-bench/bin/download-dataset.sh
+        - run: lein sub -s crux-bench uberjar
+        - run:
+            command: |
+              echo 'export BUILD_ARG="--build-arg crux_commit=$CIRCLE_SHA1"' >> $BASH_ENV
+              echo 'export BUILD_TAGS="commit-$CIRCLE_SHA1"' >> $BASH_ENV
+              if [ "${CIRCLE_BRANCH}" == "master" ]; then
+                echo 'export BUILD_TAGS="master,master-$CIRCLE_SHA1,${BUILD_TAGS}"' >> $BASH_ENV
+              fi
+
+        - setup_remote_docker
+        - aws-ecr/build-and-push-image:
+              dockerfile: 'Dockerfile'
+              extra-build-args: '${BUILD_ARG}'
+              path: "crux-bench/"
+              repo: 'crux-bench'
+              tag: '${BUILD_TAGS}'
+        - save_cache:
+            paths:
+              - ~/crux/crux-bench/data/
+            key: v1-dataset-{{ checksum ".circleci-bench-dataset-cache-key" }}
+
+
+  create-artifacts:
+    docker:
+      - image: circleci/clojure:openjdk-8-tools-deps-1.10.1.483
+    working_directory: ~/crux
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - crux/deploy-tar
+      - crux/deploy-artifacts:
+          crux-edn: "crux.edn"
+          deps-edn: "deps.edn"
+          artifact-name: "crux-standalone"
+      - crux/deploy-artifacts:
+          crux-edn: "crux-sql.edn"
+          deps-edn: "sql-deps.edn"
+          artifact-name: "crux-standalone-sql"
+
+  create-javadocs:
+    docker:
+      - image: circleci/clojure:lein-2.9.1
+    working_directory: ~/crux
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run: javadoc -d crux-javadoc/ -cp `lein classpath` -sourcepath crux-core/src crux.api
+      - aws-s3/sync:
+          arguments: |
+            --acl public-read
+          from: crux-javadoc
+          overwrite: true
+          to: 's3://crux-doc/crux-javadoc/${CIRCLE_TAG}'
+      - run: javadoc -d crux-alpha-javadoc/ -cp `lein classpath` -sourcepath crux-core/src crux.api.alpha
+      - aws-s3/sync:
+          arguments: |
+            --acl public-read
+          from: crux-alpha-javadoc
+          overwrite: true
+          to: 's3://crux-doc/crux-alpha-javadoc/${CIRCLE_TAG}'
+
+
+workflows:
+  version: 2.1
+  commit:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - deploy-commit:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore:
+                - /pull\/[0-9]+/
+  release:
+    jobs:
+      - build:
+         filters:
+           tags:
+             only: /.*/
+           branches:
+             ignore: /.*/
+      - hold:
+          type: approval
+          requires:
+            - build
+          filters:
+           tags:
+             only: /.*/
+           branches:
+             ignore: /.*/
+      - create-artifacts:
+          requires:
+            - hold
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - create-javadocs:
+          requires:
+            - hold
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/

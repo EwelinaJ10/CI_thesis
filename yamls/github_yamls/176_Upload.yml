@@ -1,0 +1,31 @@
+name: Automatic upload package to PyPI
+
+on: [push]
+
+jobs:
+  build:
+    name: Publish package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install setuptools
+        run: >-
+          python -m
+          pip install
+          setuptools wheel
+          --user
+      - name: Generate Pubilsh File
+        run: |
+          python setup.py sdist bdist_wheel
+      - name: Automatic Publish
+        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: ${{ secrets.PYPI_USER_NAME }}
+          password: ${{ secrets.PYPI_PASSWOED }}
+

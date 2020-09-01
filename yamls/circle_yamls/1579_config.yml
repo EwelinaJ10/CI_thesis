@@ -1,0 +1,20 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: cypress/browsers:node12.13.0-chrome80-ff74
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test
+      - run: npm run test:integration
+      - run: npm run test:es-check
+      - run: npm run print-bundle-size
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: cypress/screenshots
+      - store_artifacts:
+          path: cypress/videos

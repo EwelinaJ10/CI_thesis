@@ -1,0 +1,110 @@
+version: 2
+jobs:
+  test-android:
+    docker:
+      - image: circleci/android:api-29-node
+
+    environment:
+      JVM_OPTS: -Xmx3200m
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          command: |
+            sudo cp ~/../../lib/x86_64-linux-gnu/libncurses.so.6.1 ~/../../usr/lib/libncurses.so.5
+            sudo cp ~/../../lib/x86_64-linux-gnu/libtinfo.so.6.1 ~/../../usr/lib/libtinfo.so.5
+
+      - run:
+          command: |
+            cd RNIFKTest
+            npm i
+            cd android
+            ./gradlew androidDependencies
+
+      - run: npm run build:all
+
+      - run:
+          command: |
+            VERSION=0.15.0; \
+            curl -sSL "https://github.com/facebook/infer/releases/download/v$VERSION/infer-linux64-v$VERSION.tar.xz" | sudo tar -C /opt -xJ && \
+            sudo ln -s "/opt/infer-linux64-v$VERSION/bin/infer" /usr/local/bin/infer
+
+      - run:
+          command: |
+            cd RNIFKTest
+            npm run infer:android
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist/*
+
+  test-ios:
+    macos:
+      xcode: "10.1.0"
+    working_directory: /Users/distiller/project
+
+    steps:
+      - checkout
+
+      - run:
+          command: |
+            sudo gem install cocoapods
+            npm i -g dot-json
+            cd RNIFKTest
+            dot-json package.json scripts.preinstall -d
+            dot-json package.json scripts.postinstall -d
+            npm un react-native-image-filter-kit
+            npm i iyegoroff/react-native-image-filter-kit
+            npm i
+            npm run install:pods
+
+      - run:
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install infer
+            # sudo pip install pbxproj
+            # cd RNIFKTest
+            # npm run patch:pbxproj
+
+      - run:
+          command: |
+            cd RNIFKTest
+            npm run infer:ios
+
+  publish:
+    docker:
+      - image: circleci/node:10.10
+
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - run: npm publish
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-android:
+          filters:
+            tags:
+              only: /.*/
+
+      - test-ios:
+          filters:
+            tags:
+              only: /.*/
+
+      - publish:
+          requires:
+            - test-android
+            - test-ios
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/

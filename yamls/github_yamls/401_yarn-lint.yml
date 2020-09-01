@@ -1,0 +1,16 @@
+on: [push, pull_request]
+
+name: yarn-lint
+
+jobs:
+  lint:
+    name: Actions - lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - working-directory: ./test
+        run: yarn
+      - working-directory: ./test
+        run: yarn lint

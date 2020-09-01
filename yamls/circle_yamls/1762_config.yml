@@ -1,0 +1,124 @@
+version: 2.1
+
+aliases:
+  - &test_filters
+    branches:
+      ignore:
+        - master
+        - /WIP\/.*/
+
+executors:
+  macos_executor:
+    macos:
+      xcode: "11.4.0"
+
+commands:
+  setup:
+    steps:
+      - checkout
+      - run:
+          name: Install secrets
+          command: base64 -D \<<< $SECRETS_TAR | tar -x
+      - restore_cache:
+          key: v1-gems-{{ checksum "Gemfile.lock" }}
+      - run:
+          name: Install gems  
+          command: bundle check || bundle install --path vendor/bundle
+      - save_cache:
+          key: v1-gems-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      - run:
+          name: Setup internal pod repo
+          command: sh .circleci/setup_internal_pod_repo.sh
+  store_scan_artifacts:
+    steps:
+      - store_artifacts:
+          path: "~/Library/Logs/scan"
+          destination: "scan"
+  test:
+    parameters:
+      scheme:
+        type: string
+      test_plan:
+        type: string
+    steps:
+      - setup
+      - run:
+          name: Test
+          command: bundle exec fastlane test scheme:<< parameters.scheme >> test_plan:<< parameters.test_plan >>
+      - store_scan_artifacts
+  status_check:
+    steps:
+      - setup
+      - run:
+          name: Status check
+          command: bundle exec fastlane status_check
+      - store_scan_artifacts
+  beta:
+    steps:
+      - setup
+      - run:
+          name: Setup code signing
+          command: sh .circleci/setup_code_signing.sh
+      - run:
+          name: Deploy to App Center
+          command: bundle exec fastlane beta
+      - store_artifacts:
+          path: "~/Library/Logs/gym"
+          destination: "gym"
+
+jobs:
+  test_community_app:
+    executor: macos_executor
+    steps:
+      - test:
+          scheme: Video-Community
+          test_plan: Unit
+  test_internal_app:
+    executor: macos_executor
+    steps:
+      - test:
+          scheme: Video-Internal
+          test_plan: Unit
+  run_ui_tests:
+    executor: macos_executor
+    steps:
+      - test:
+          scheme: Video-Internal
+          test_plan: UI
+  status_check:
+    executor: macos_executor
+    steps:
+      - status_check
+  deploy_internal_app_beta:
+    executor: macos_executor
+    steps:
+      - beta
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test_community_app:
+          filters: *test_filters
+      - test_internal_app:
+          filters: *test_filters
+      - run_ui_tests:
+          filters: *test_filters
+      - deploy_internal_app_beta:
+          filters:
+            branches:
+              only:
+                - master
+  status_check:
+    triggers:
+      - schedule:
+          cron: "0 * * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - status_check
+ 

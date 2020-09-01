@@ -1,0 +1,33 @@
+version: 2.0
+
+jobs:
+  build:
+    working_directory: ~/transition-x
+    docker:
+      - image: circleci/android:api-28-alpha
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx1024m"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dkotlin.incremental=false"
+    steps:
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "transitionx/build.gradle" }}
+      - run:
+          name: Chmod permissions #if permission for Gradlew Dependencies fail, use this.
+          command: sudo chmod +x ./gradlew
+      - run:
+          name: Download Dependencies
+          command: ./gradlew dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "transitionx/build.gradle" }}
+      - run:
+          name: Run Tests
+          command: ./gradlew test
+      - store_artifacts:
+          path: transitionx/build/reports
+          destination: reports
+      - store_test_results:
+          path: transitionx/build/test-results

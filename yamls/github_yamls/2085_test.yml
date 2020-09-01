@@ -1,0 +1,45 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [v12.3.1]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get yarn cache
+        id: yarn-cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install packages
+        run: yarn
+
+      - name: Build sources
+        run: yarn build
+
+      - name: Validate
+        run: yarn lint
+
+      - name: Run tests
+        run: yarn test:cover --ci
+
+      - name: Bundle size
+        run: |
+          GITHUB_RUN_NUMBER_TMP=GITHUB_RUN_NUMBER && export GITHUB_RUN_NUMBER=1;
+          echo "$GITHUB_RUN_NUMBER"
+          yarn bundlesize
+          export GITHUB_RUN_NUMBER=GITHUB_RUN_NUMBER_TMP
+          echo "$GITHUB_RUN_NUMBER"

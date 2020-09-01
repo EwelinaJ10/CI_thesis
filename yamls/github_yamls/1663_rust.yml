@@ -1,0 +1,23 @@
+name: Rust
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --all --verbose
+    - name: Run tests
+      run: cargo test --all --verbose
+    - name: Install Ignite CLI
+      run: cargo install --path oxygengine-ignite --force
+    - name: Clean project for the test
+      run: rm -rf ./* && ls -al
+    - name: Create project with Ignite CLI
+      run: OXY_UPDATE_PRESETS=1 oxygengine-ignite new test
+    - name: Build test project
+      run: cd test && oxygengine-ignite package

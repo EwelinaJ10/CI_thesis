@@ -1,0 +1,26 @@
+name: SwiftPlot
+
+on:
+  push:
+    branches: master
+  pull_request:
+
+jobs:
+  build:
+    
+    runs-on: macOS-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install FreeType
+      run: brew install freetype
+    - name: Build
+      run: swift build -v
+    - name: Run tests
+      run: SWIFTPLOT_TEST_OUTPUT=/private/var/tmp/swiftplot swift test -v
+    - name: Upload test artefacts
+      uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: images
+        path: /private/var/tmp/swiftplot/

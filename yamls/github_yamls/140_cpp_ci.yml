@@ -1,0 +1,27 @@
+name: C/C++ CI
+
+on: [push, pull_request, schedule]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: configure
+      run: sudo apt-get install libgtk-3-dev -y && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
+    - name: build
+      run: bash build.sh linux
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: build
+      run: ./build
+
+  build-osx:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Configure & Build
+      run: bash build.sh macos

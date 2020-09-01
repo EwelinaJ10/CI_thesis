@@ -1,0 +1,24 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ master,feature/testimp/github-actions ]
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-18.04
+    defaults:
+      run:
+        working-directory: website
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: git config
+      run: |
+        git config --global user.email "jj.y0sh1da@gmail.com"
+        git config --global user.name "neon-izm"
+    - run: yarn install
+    - run: yarn deploy
+      env:
+        GIT_USER: ${{ github.actor }}:${{ secrets.SOCIALGAME_GITHUB_TOKEN }}

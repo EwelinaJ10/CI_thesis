@@ -1,0 +1,53 @@
+language: python
+
+# Use container-based infrastructure
+sudo: false
+
+matrix:
+  include:
+    - env: TOX_ENV=py27-cryptography
+      python: 2.7
+    - env: TOX_ENV=py27-pycrypto
+      python: 2.7
+    - env: TOX_ENV=py34-cryptography
+      python: 3.4
+    - env: TOX_ENV=py34-pycrypto
+      python: 3.4
+    - env: TOX_ENV=py35-cryptography
+      python: 3.5
+    - env: TOX_ENV=py35-pycrypto
+      python: 3.5
+    - env: TOX_ENV=py36-cryptography
+      python: 3.6
+    - env: TOX_ENV=py36-pycrypto
+      python: 3.6
+    - env: TOX_ENV=pypy-cryptography
+      python: "pypy"
+    - env: TOX_ENV=pypy3-cryptography
+      python: "pypy3"
+
+services:
+  - redis-server
+  - memcached
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+install:
+  - pip install tox
+  - pip install "flake8>=3.7"
+
+before_script:
+  - "flake8 ."
+
+script:
+  tox -e $TOX_ENV
+
+after_success:
+  - |
+    if [[ "${TRAVIS_TAG:-}" != "" && "$TOX_ENV" == "py36-cryptography" ]]; then
+      python3.6 setup.py sdist bdist_wheel;
+      python3.6 -m pip install twine;
+      python3.6 -m twine upload --skip-existing dist/*;
+    fi

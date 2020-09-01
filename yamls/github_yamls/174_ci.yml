@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  macos:
+    runs-on: macOS-latest
+
+    strategy:
+      matrix:
+        destination:
+          - platform=macOS
+          - platform=iOS Simulator,name=iPhone 11
+          - platform=tvOS Simulator,name=Apple TV
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Generate Xcode Project
+        run: swift package generate-xcodeproj
+      - name: Run Test Target
+        run: xcodebuild test -destination '${{ matrix.destination }}' -scheme CommonMarkAttributedString-Package

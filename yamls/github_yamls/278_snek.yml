@@ -1,0 +1,35 @@
+name: snek
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Clone snek'
+        uses: actions/checkout@v2
+        with:
+          path: snek
+
+      - name: 'Build snek container'
+        run: |
+          docker build -t snek \
+            -f snek/.github/Dockerfile \
+            snek
+
+      - name: 'Create install destinationn'
+        run: |
+          mkdir `pwd`/artifacts
+
+      - name: 'Build snek'
+        run: |
+          docker run --rm \
+            --mount type=bind,source=`pwd`/artifacts,destination=/artifacts \
+            snek \
+            make DESTDIR=/artifacts PREFIX=/opt/snek SNEK_OTHEROS=1 SNEK_RISCV_TEST=1 check install install-otheros
+
+      - name: 'Upload results'
+        uses: actions/upload-artifact@v2
+        with:
+          name: snek
+          path: artifacts

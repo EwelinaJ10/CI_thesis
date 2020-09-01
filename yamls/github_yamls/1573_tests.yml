@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  push:
+    branches:
+    - master, dev
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Set environment variables
+      uses: allenevans/set-env@v1.0.0
+      with:
+        PIPENV_DEFAULT_PYTHON_VERSION: ${{ matrix.python-version }}
+    - name: Install pre-requisites
+      run: |
+        sudo apt-get update
+        bash ./prereqs_linux.sh
+    - name: Build pydp lib
+      run: |
+        bash ./build_PyDP.sh
+    - name: Run tests
+      run: |
+        make run-tests-only

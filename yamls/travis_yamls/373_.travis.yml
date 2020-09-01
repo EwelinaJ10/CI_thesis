@@ -1,0 +1,26 @@
+language: go
+install: true
+sudo: false
+
+go:
+  - 1.12.x
+
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+    - os: osx
+      osx_image: xcode10.1
+
+script:
+  - diff -u <(echo -n) <(gofmt -d $(find . -type f -name '*.go' -not -path "./vendor/*")) 
+  - make && make test
+  - if command -v docker && docker info; then XDEV_CC_IMAGE=xuper/emcc:1.38.30 make contractsdk; fi
+  - cd ./core/test && bash ci_pipeline.sh
+  
+after_success:
+  - bash <(curl -s https://codecov.io/bash)  -y .github/codecov.yml
+
+cache:
+  directories:
+    - .cache

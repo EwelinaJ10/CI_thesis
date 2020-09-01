@@ -1,0 +1,334 @@
+name: Rotki CI
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  lint-frontend:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [12.x]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'Linux')
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-
+      - name: Install dependencies
+        working-directory: ./frontend/app
+        run: npm ci
+      - name: Lint
+        working-directory: ./frontend/app
+        run: npm run lint:check
+      - name: Stylelint
+        working-directory: ./frontend/app
+        run: npm run stylelint
+      - name: Build
+        working-directory: ./frontend/app
+        run: npm run build
+      - name: Run unit tests
+        working-directory: ./frontend/app
+        run: npm run test:unit
+      - name: Upload coverage
+        working-directory: ./frontend/app
+        run: cd .. && bash <(curl -s https://codecov.io/bash) -F frontend_unit
+  docs:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.7]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements_docs.txt
+          pip install -e .
+          git rev-parse HEAD
+      - name: Build html docs
+        run: cd docs && make html
+  lint-backend:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.7]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements_lint.txt
+          pip install -e .
+          git rev-parse HEAD
+      - name: Lint
+        run: make lint
+
+  test-backend:
+    needs: lint-backend
+    env:
+      CI: true
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.7]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download Geth
+        run: |
+          .travis/download_geth.sh ${{ matrix.os }}
+          echo "::add-path::$HOME/.bin"
+        env:
+          GETH_URL_LINUX: https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.8.13-225171a4.tar.gz
+          GETH_URL_MACOS: https://gethstore.blob.core.windows.net/builds/geth-darwin-amd64-1.8.13-225171a4.tar.gz
+          GETH_VERSION: 1.8.13
+      - name: Setup SQLCipher
+        run: |
+          if [ ${{ matrix.os }} == 'ubuntu-latest' ];
+          then
+            sudo apt-get update
+            sudo apt-get install libxml2-utils
+            ./install_deps.sh
+            sudo ldconfig
+          fi
+          if [ ${{ matrix.os }} == 'macos-latest' ];
+          then
+            brew install sqlcipher
+          fi
+      - name: Set up python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'Linux')
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'macOS')
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/.rotkehlchen-test-dir
+          key: ${{ runner.os }}-testdir-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-testdir-
+      - name: Install dependencies
+        run: |
+          pip install --upgrade "pip<19.0.0" wheel
+          pip install pytest-travis-fold codecov pytest-cov
+          pip install -r requirements_dev.txt
+          pip install -e .
+      - name: Run Test
+        run: |
+          COVERAGE_ARGS='--cov=./ --travis-fold=always'
+          if [ ${{ matrix.os }} == 'macos-latest' ];
+          then
+            COVERAGE_ARGS=''
+          fi
+          python pytestgeventwrapper.py $COVERAGE_ARGS rotkehlchen/tests
+      - name: Upload coverage
+        run: bash <(curl -s https://codecov.io/bash) -F backend
+  test-integration:
+    needs: [lint-frontend, test-backend]
+    env:
+      CI: true
+      FILTER: '[ui tests]'
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.7]
+        node-version: [12.x]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: check if ui tests should run
+        id: check
+        run: |
+          readonly local last_log=$(git log -1 --pretty=format:"%s")
+          readonly local count=$(echo "${last_log}" | grep -c "${FILTER}" )
+          if [[ "${count}" -eq 0 ]]; then
+              echo "skipping job, ${FILTER} not found"
+          else
+              echo "::set-output name=ui-tests::true"
+          fi
+      - name: Set up python
+        if: contains(steps.check.outputs.ui-tests, true)
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'Linux') && contains(steps.check.outputs.ui-tests, true)
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'macOS') && contains(steps.check.outputs.ui-tests, true)
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'Linux') && contains(steps.check.outputs.ui-tests, true)
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'macOS') && contains(steps.check.outputs.ui-tests, true)
+        with:
+          path: ~/Library/Caches/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-
+      - uses: actions/cache@v1
+        if: contains(steps.check.outputs.ui-tests, true)
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - uses: actions/cache@v1
+        if: contains(steps.check.outputs.ui-tests, true)
+        with:
+          path: ~/.cache/.rotkehlchen-test-dir
+          key: ${{ runner.os }}-testdir-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-testdir-
+      - name: Setup SQLCipher
+        if: contains(steps.check.outputs.ui-tests, true)
+        run: |
+          if [ ${{ matrix.os }} == 'ubuntu-latest' ];
+          then
+            sudo apt-get update
+            sudo apt-get install libxml2-utils
+            ./install_deps.sh
+            sudo ldconfig
+          fi
+          if [ ${{ matrix.os }} == 'macos-latest' ];
+          then
+            brew install sqlcipher
+          fi
+      - name: Setup backend
+        if: contains(steps.check.outputs.ui-tests, true)
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+      - name: Run integration tests
+        if: contains(steps.check.outputs.ui-tests, true)
+        working-directory: ./frontend/app
+        run: |
+          npm ci
+          npm run test:integration-ci
+      - name: Upload coverage
+        if: contains(steps.check.outputs.ui-tests, true)
+        working-directory: ./frontend/app
+        run: cd .. && bash <(curl -s https://codecov.io/bash) -F frontend_integration
+      - uses: actions/upload-artifact@v1
+        if: failure() && contains(steps.check.outputs.ui-tests, true)
+        with:
+          name: screenshots-${{ runner.os }}
+          path: ./frontend/app/tests/e2e/screenshots
+      - uses: actions/upload-artifact@v1
+        if: always() && contains(steps.check.outputs.ui-tests, true)
+        with:
+          name: videos-${{ runner.os }}
+          path: ./frontend/app/tests/e2e/videos
+  package:
+    needs: test-backend
+    if: startsWith(github.event.ref, 'refs/tags')
+    env:
+      CI: true
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.7]
+        node-version: [12.x]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'Linux')
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v1
+        if: startsWith(runner.os, 'macOS')
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Setup SQLCipher
+        run: |
+          if [ ${{ matrix.os }} == 'ubuntu-latest' ];
+          then
+            sudo apt-get update
+            sudo apt-get install libxml2-utils
+            ./install_deps.sh
+            sudo ldconfig
+          fi
+          if [ ${{ matrix.os }} == 'macos-latest' ];
+          then
+            brew install sqlcipher
+          fi
+      - name: Package
+        run: ./package.sh

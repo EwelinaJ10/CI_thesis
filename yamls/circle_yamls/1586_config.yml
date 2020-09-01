@@ -1,0 +1,30 @@
+version: 2.1
+
+jobs:
+  test:
+    machine:
+      enabled: true
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run:
+          name: System Setup
+          command: |
+            sudo apt-get -qq update -y
+            sudo apt-get -q install -y curl ca-certificates wget make 
+
+      - run:
+          name: Docker up
+          command: |
+            docker-compose up -d
+
+workflows:
+  version: 2
+  build_and_package:
+    jobs:
+      - test:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/

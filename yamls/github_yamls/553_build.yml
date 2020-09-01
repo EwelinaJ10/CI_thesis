@@ -1,0 +1,13 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - name: Build
+      run: swift build

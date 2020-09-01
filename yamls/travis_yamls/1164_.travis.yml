@@ -1,0 +1,11 @@
+jobs:
+  include:
+  - stage: Tests
+    name: GoLang 1.13 on Ubuntu Bionic
+    language: go
+    os: linux
+    dist: bionic
+    go: 1.13.x
+    script:
+    - go run ./cmd/make test
+

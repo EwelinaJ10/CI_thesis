@@ -1,0 +1,44 @@
+name: Test
+
+on:
+  push:
+    paths:
+    - 'packages/metastream-app/**'
+  pull_request:
+    paths:
+    - 'packages/metastream-app/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - name: Install dependencies
+      run: |
+        yarn install
+
+    - name: Build signal server
+      working-directory: ./packages/metastream-signal-server
+      run: |
+        yarn build
+
+    - name: Run tests
+      working-directory: ./packages/metastream-app
+      run: |
+        yarn test
+      env:
+        METASTREAM_SIGNAL_SERVER: ws://localhost:27064
+
+    - name: Archive screenshots
+      uses: actions/upload-artifact@v2
+      with:
+        name: screenshots
+        path: packages/metastream-app/test/artifacts/*.jpg

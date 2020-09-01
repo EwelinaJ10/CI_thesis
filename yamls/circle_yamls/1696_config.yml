@@ -1,0 +1,81 @@
+# Golang CircleCI 2.0 configuration file
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1
+        environment:
+          GOFLAGS: -mod=vendor
+          TEST_RESULTS: /tmp/test-results
+          BAUR_TEST_POSTGRESQL_URL: "postgres://root@localhost:5432/baur?sslmode=disable"
+
+      - image: circleci/postgres:12
+        environment:
+          POSTGRES_USER: root
+          POSTGRES_DB: baur
+          POSTGRES_HOST_AUTH_METHOD: trust
+
+    working_directory: ~/baur
+    steps:
+      - checkout
+
+      - run:
+          name: Preparing Test Environment
+          command: |
+            GO111MODULE=off go get github.com/jstemmer/go-junit-report
+
+            mkdir -p ${TEST_RESULTS}
+
+      - run:
+          name: Waiting for Postgres to be ready
+          command: |
+            for i in `seq 1 30`; do
+              nc -z localhost 5432 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for Postgres && exit 1
+
+      - run:
+          name: Run Tests
+          command: |
+            git config --global user.email "circleci-baurtest@example.com"
+            git config --global user.name "baur"
+            trap "go-junit-report <${TEST_RESULTS}/go-test.out > ${TEST_RESULTS}/go-test-report.xml" EXIT
+            go test --tags=dbtest -v -test.timeout 1m ./... | tee ${TEST_RESULTS}/go-test.out
+
+      - store_test_results:
+          path: /tmp/test-results
+
+  build:
+    docker:
+      - image: circleci/golang:1
+
+    working_directory: ~/baur
+    steps:
+      - checkout
+
+      - run:
+          name: Building baur
+          command: make baur
+
+  static_analysis:
+    docker:
+      - image: golangci/golangci-lint:v1.28.3
+
+    working_directory: ~/baur
+    steps:
+      - checkout
+
+      - run:
+          name: Running Static Code Analysis
+          command: golangci-lint run
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - build
+      - test
+      - static_analysis

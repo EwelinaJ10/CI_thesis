@@ -1,0 +1,23 @@
+name: 'Testing Custom Action'
+on: [push]
+
+jobs:
+  test_example:
+    runs-on: ubuntu-latest
+    name: Execute the pycharm-security action
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          repository: 'tonybaloney/pycharm-security-testing'
+          ref: 'master'
+          path: 'pycharm-security'
+      - name: Run PyCharm Security
+        uses: tonybaloney/pycharm-security@master
+      - name: Run PyCharm Security
+        uses: tonybaloney/pycharm-security@master
+        with:
+          path: .
+      - name: Run PyCharm Security
+        uses: tonybaloney/pycharm-security@master
+        with:
+          profile: "customProfile.xml"

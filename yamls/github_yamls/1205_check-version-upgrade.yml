@@ -1,0 +1,137 @@
+name: Test version upgrades
+
+on: 
+  repository_dispatch:
+    types: [check-version-upgrade]
+
+jobs:
+    Provision-Runners-RPM:
+      name: Provision-Runners-RPM
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v1
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_EC2_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_EC2_SECRET_ACCESS_KEY }}
+            aws-region: us-west-2
+        - name: AWS Cli Processing
+          run: |
+            #!/bin/bash
+            RUNNERS="odfe-rpm-version-upgrade"
+            .github/scripts/setup_runners.sh run $RUNNERS ${{ secrets.ODFE_RELEASE_BOT_PUBLIC_PRIVATE_READ_WRITE_TOKEN }}
+
+    Test-DEB:
+      name: Test DEB upgrade
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - name: Setup Java
+          uses: actions/setup-java@v1
+          with:
+            java-version: 14
+
+        - name: Install previous version of ODFE
+          run: |
+            #!/bin/bash
+            set -e
+            prev_es_version=`./bin/version-info --es-prev`
+            prev_od_version=`./bin/version-info --od-prev`
+            sudo add-apt-repository ppa:openjdk-r/ppa
+            sudo apt update -y
+            sudo apt install openjdk-11-jdk -y
+            sudo apt install unzip wget -y
+            sudo sysctl -w vm.max_map_count=262144
+            wget -qO - https://d3g5vo6xdbdb9a.cloudfront.net/GPG-KEY-opendistroforelasticsearch | sudo apt-key add -
+            echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/apt stable main" | sudo tee -a   /etc/apt/sources.list.d/opendistroforelasticsearch.list
+            wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-$prev_es_version-amd64.deb
+            sudo dpkg -i elasticsearch-oss-$prev_es_version-amd64.deb
+            sudo apt-get update -y
+            sudo apt install opendistroforelasticsearch -y
+            sudo systemctl start elasticsearch.service
+            sleep 30
+            echo "####### Running ODFE-$prev_od_version ##############"
+
+        - name: Upgrading to upcoming version
+          if: ${{ success() }}
+          run: |
+            #!/bin/bash
+            set +e
+            sudo systemctl stop elasticsearch.service
+            es_version=`./bin/version-info --es`
+            wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-$es_version-amd64.deb
+            sudo dpkg -i elasticsearch-oss-$es_version-amd64.deb
+            echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list
+            sudo apt-get update
+            sudo apt install opendistroforelasticsearch -y
+            # temp fix to upgrade broken packages
+            sudo apt --fix-broken install
+            
+            sudo systemctl restart elasticsearch.service
+            sleep 30
+            echo "########## Upgrade successful ##########"
+
+    Test-RPM:
+      needs: [Provision-Runners-RPM]
+      name: Test RPM upgrade
+      runs-on: [self-hosted, Linux, X64, odfe-rpm-version-upgrade]
+      steps:
+        - uses: actions/checkout@v2
+        - name: Setup Java
+          uses: actions/setup-java@v1
+          with:
+            java-version: 14
+        
+        - name: Installing python
+          run: sudo yum install python37 -y
+
+        - name: Install previous version of ODFE
+          run: |
+            #!/bin/bash
+            set -e
+            prev_es_version=`./bin/version-info --es-prev`
+            prev_od_version=`./bin/version-info --od-prev`
+            sudo curl https://d3g5vo6xdbdb9a.cloudfront.net/yum/opendistroforelasticsearch-artifacts.repo -o /etc/yum.repos.d/opendistroforelasticsearch-artifacts.repo
+            sudo yum install wget unzip -y
+            export PATH=$PATH:$JAVA_HOME
+            sudo yum install opendistroforelasticsearch-$prev_od_version -y
+            sudo systemctl start elasticsearch.service
+            sleep 30
+            echo "####### Running ODFE-$prev_od_version ##############"
+          
+
+        - name: Upgrading to upcoming version
+          if: ${{ success() }}
+          run: |
+            #!/bin/bash
+            set -e
+            od_version=`./bin/version-info --od`
+            sudo systemctl stop elasticsearch.service
+            sudo rm -rf /etc/yum.repos.d/opendistroforelasticsearch-artifacts.repo
+            sudo curl https://d3g5vo6xdbdb9a.cloudfront.net/yum/staging-opendistroforelasticsearch-artifacts.repo  -o /etc/yum.repos.d/staging-opendistroforelasticsearch-artifacts.repo
+            sudo yum install -y opendistroforelasticsearch-$od_version
+            sudo systemctl restart elasticsearch.service
+            sleep 30
+            echo "########## Upgrade successful ##########"
+
+    CleanUp-Runners-RPM:
+      needs: [Test-RPM]
+      if: always()
+      name: CleanUp-Runners-RPM
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v1
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_EC2_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_EC2_SECRET_ACCESS_KEY }}
+            aws-region: us-west-2
+        - name: AWS Cli Processing
+          run: |
+            #!/bin/bash
+            # Please add comma at the end of the RUNNERS strings
+            RUNNERS="odfe-rpm-version-upgrade"
+            .github/scripts/setup_runners.sh terminate $RUNNERS ${{ secrets.ODFE_RELEASE_BOT_PUBLIC_PRIVATE_READ_WRITE_TOKEN }}
+

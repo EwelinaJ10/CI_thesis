@@ -1,0 +1,40 @@
+name: Browsers
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout submodules
+        uses: textbook/git-checkout-submodule-action@master
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Cache BrowserStackLocal
+        uses: actions/cache@v1
+        with:
+          path: ~/.browserstack
+          key: bsl-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            bsl-${{ runner.os }}-
+
+      - run: npm ci
+      - run: npm run build:browser
+      - name: Playground setup
+        working-directory: ./playground
+        run: npm ci
+
+      - name: Run tests on BrowserStack
+        working-directory: ./playground
+        run: npm test
+        env:
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}

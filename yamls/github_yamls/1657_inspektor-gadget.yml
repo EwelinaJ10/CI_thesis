@@ -1,0 +1,165 @@
+name: Compile Inspektor Gadget
+on:
+  push:
+  schedule:
+    - cron: '0 2 * * *' # Night builds at 02:00
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code
+      uses: actions/checkout@v1
+
+    - name: Build binaries for the gadget container image
+      env:
+        CONTAINER_REPO: ${{ secrets.CONTAINER_REPO }}
+      run: |
+        make -C gadget-container gadget-container-deps
+
+    - name: Build gadget container and publish to Registry
+      id: publish-registry
+      uses: elgohr/Publish-Docker-Github-Action@2.8
+      with:
+        name: ${{ secrets.CONTAINER_REPO }}
+        username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+        password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+        workdir: gadget-container
+        dockerfile: gadget.Dockerfile
+        snapshot: true
+        cache: ${{ github.event_name != 'schedule' }}
+
+    - name: Build Inspektor Gadget
+      env:
+        CONTAINER_REPO: ${{ secrets.CONTAINER_REPO }}
+        IMAGE_TAG: ${{ steps.publish-registry.outputs.snapshot-tag }}
+      run: |
+        make kubectl-gadget
+
+        # Prepare assets for release and actions artifacts
+
+        platforms="darwin-amd64 linux-amd64"
+        for platform in $platforms; do
+          mkdir $platform
+          cp kubectl-gadget-$platform $platform/kubectl-gadget
+          cp LICENSE $platform/
+          tar --sort=name --owner=root:0 --group=root:0 \
+            -czf inspektor-gadget-$platform.tar.gz -C $platform \
+            kubectl-gadget LICENSE
+        done
+
+    - name: Unit tests
+      env:
+        CONTAINER_REPO: ${{ secrets.CONTAINER_REPO }}
+      run: |
+        make test
+
+    - name: Setup Minikube
+      uses: manusa/actions-setup-minikube@v1.0.2
+      with:
+        minikube version: 'v1.9.2'
+        kubernetes version: 'v1.18.2'
+        github token: ${{ secrets.GITHUB_TOKEN }}
+
+    - uses: azure/docker-login@v1
+      with:
+        username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+        password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+
+    - name: Integration tests
+      env:
+        CONTAINER_REPO: ${{ secrets.CONTAINER_REPO }}
+        IMAGE_TAG: ${{ steps.publish-registry.outputs.snapshot-tag }}
+      run: |
+        echo "Using IMAGE_TAG=$IMAGE_TAG"
+
+        TESTS_DOCKER_ARGS="-e KUBECONFIG=/root/.kube/config -v /home/runner/.kube:/root/.kube -v /home/runner/work/_temp/.minikube:/home/runner/work/_temp/.minikube" \
+            make -C integration build test
+
+        sed -i "s/latest/$IMAGE_TAG/g" integration/gadget-integration-tests-job.yaml
+
+    - name: Smoke test build of the dev image for minikube
+      env:
+        CONTAINER_REPO: ${{ secrets.CONTAINER_REPO }}
+        MINIKUBE: true
+      run: |
+        mkdir ../traceloop
+        touch ../traceloop/traceloop
+        make -C gadget-container/ docker-gadget/minikube-build
+
+    - name: Upload linux-amd64 artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: inspektor-gadget-linux-amd64
+        path: inspektor-gadget-linux-amd64.tar.gz
+
+    - name: Upload darwin-amd64 artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: inspektor-gadget-darwin-amd64
+        path: inspektor-gadget-darwin-amd64.tar.gz
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1.0.0
+      if: startsWith(github.ref, 'refs/tags/v')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: true
+        prerelease: false
+
+    - name: Upload linux-amd64 Release Asset
+      id: upload-release-asset-linux-amd64
+      uses: actions/upload-release-asset@v1.0.1
+      if: startsWith(github.ref, 'refs/tags/v')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: inspektor-gadget-linux-amd64.tar.gz
+        asset_name: inspektor-gadget-linux-amd64.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload darwin-amd64 Release Asset
+      id: upload-release-asset-darwin-amd64
+      uses: actions/upload-release-asset@v1.0.1
+      if: startsWith(github.ref, 'refs/tags/v')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: inspektor-gadget-darwin-amd64.tar.gz
+        asset_name: inspektor-gadget-darwin-amd64.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload Testing Asset
+      id: upload-release-asset-testing
+      uses: actions/upload-release-asset@v1.0.1
+      if: startsWith(github.ref, 'refs/tags/v')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: integration/gadget-integration-tests-job.yaml
+        asset_name: gadget-integration-tests-job.yaml
+        asset_content_type: application/x-yaml
+
+    - name: Push Integration Test Image
+      if: startsWith(github.ref, 'refs/tags/v')
+      env:
+        CONTAINER_REPO: ${{ secrets.CONTAINER_REPO }}
+        IMAGE_TAG: ${{ steps.publish-registry.outputs.snapshot-tag }}
+      run: |
+        make -C integration push

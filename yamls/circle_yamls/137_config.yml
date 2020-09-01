@@ -1,0 +1,262 @@
+version: 2
+
+references:
+  attach_workspace: &attach_workspace
+    attach_workspace:
+      at: /tmp/workspace
+
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.13
+    steps:
+      - checkout
+      - run: go test -v ./... -mod vendor
+
+  release-controller-master:
+    machine: true
+    steps:
+      - checkout
+      - run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+      - run: CONTROLLER_VERSION=$CIRCLE_SHA1 make push-controller
+
+  build-ui:
+    docker:
+      - image: circleci/node:13.6
+    steps:
+      - *attach_workspace
+      - checkout
+      - run: cd ui && npm i
+      - run: cd ui && NODE_ENV=production SEGMENT_WRITE_KEY=$SEGMENT_WRITE_KEY BUGSNAG_KEY=$BUGSNAG_KEY INTERCOM_ID=$INTERCOM_ID AUTH0_DOMAIN=$AUTH0_DOMAIN AUTH0_AUDIENCE=$AUTH0_AUDIENCE npm run-script build
+      - run: cd ui && mv dist /tmp/workspace
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - dist
+
+  build-ui-staging:
+    docker:
+      - image: circleci/node:13.6
+    steps:
+      - *attach_workspace
+      - checkout
+      - run: cd ui && npm i
+      - run: cd ui && NODE_ENV=production SEGMENT_WRITE_KEY=$STAGING_SEGMENT_WRITE_KEY BUGSNAG_KEY=$STAGING_BUGSNAG_KEY INTERCOM_ID=$STAGING_INTERCOM_ID AUTH0_DOMAIN=$STAGING_AUTH0_DOMAIN AUTH0_AUDIENCE=$STAGING_AUTH0_AUDIENCE npm run-script build
+      - run: cd ui && mv dist /tmp/workspace
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - dist
+
+  deploy-ui-production:
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - *attach_workspace
+      - run: sudo pip install awscli
+      - run: aws s3 sync /tmp/workspace/dist s3://cloud.deviceplane.com/
+
+  deploy-ui-playground:
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - *attach_workspace
+      - run: sudo pip install awscli
+      - run: aws s3 sync /tmp/workspace/dist s3://playground.deviceplane.com/
+
+  deploy-ui-staging:
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - *attach_workspace
+      - run: sudo pip install awscli
+      - run: aws s3 sync /tmp/workspace/dist s3://staging.deviceplane.com/
+
+  release-controller:
+    machine: true
+    steps:
+      - checkout
+      - run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+      - run: CONTROLLER_VERSION=${CIRCLE_TAG#"controller-"} make push-controller
+
+  release-controller-with-db:
+    machine: true
+    steps:
+      - checkout
+      - run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+      - run: CONTROLLER_WITH_DB_VERSION=${CIRCLE_TAG#"controller-"} make push-controller-with-db
+
+  build-agent-binaries:
+    docker:
+      - image: circleci/golang:1.13
+    steps:
+      - *attach_workspace
+      - checkout
+      - run: mkdir -p ./dist/agent
+      - run: AGENT_VERSION=${CIRCLE_TAG#"agent-"} make agent-binaries
+      - run: mv dist /tmp/workspace
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - dist
+
+  upload-agent-binaries:
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - *attach_workspace
+      - checkout
+      - run: sudo pip install awscli
+      - run: aws s3 sync /tmp/workspace/dist/agent s3://agent.deviceplane.com/
+      - run: aws s3 sync /tmp/workspace/dist/agent s3://downloads.deviceplane.com/agent
+
+  release-cli:
+    machine: true
+    steps:
+      - checkout
+      - run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+      - run: CLI_VERSION=${CIRCLE_TAG#"cli-"} make push-cli
+
+  build-cli-binaries:
+    docker:
+      - image: circleci/golang:1.13
+    steps:
+      - *attach_workspace
+      - checkout
+      - run: mkdir -p ./dist/cli
+      - run: CLI_VERSION=${CIRCLE_TAG#"cli-"} make cli-binaries
+      - run: mv dist /tmp/workspace
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - dist
+
+  upload-cli-binaries:
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - *attach_workspace
+      - checkout
+      - run: sudo pip install awscli
+      - run: aws s3 sync /tmp/workspace/dist/cli s3://downloads.deviceplane.com/cli
+
+  upload-cli-binary-redirects:
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - checkout
+      - run: sudo pip install awscli
+      - run: CLI_VERSION=${CIRCLE_TAG#"cli-"} ./scripts/ci/upload-cli-binary-redirects
+
+workflows:
+  version: 2
+  test_release:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+
+      - release-controller-master:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - build-ui:
+          requires:
+            - test
+          filters:
+            branches:
+              only: /^ui|playground$/
+      - build-ui-staging:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy-ui-production:
+          requires:
+            - build-ui
+          filters:
+            branches:
+              only: ui
+      - deploy-ui-playground:
+          requires:
+            - build-ui
+          filters:
+            branches:
+              only: playground
+      - deploy-ui-staging:
+          requires:
+            - build-ui-staging
+          filters:
+            branches:
+              only: master
+
+      - release-controller:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^controller.*/
+            branches:
+              ignore: /.*/
+      - release-controller-with-db:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^controller.*/
+            branches:
+              ignore: /.*/
+      - build-agent-binaries:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^agent.*/
+            branches:
+              ignore: /.*/
+      - upload-agent-binaries:
+          requires:
+            - build-agent-binaries
+          filters:
+            tags:
+              only: /^agent.*/
+            branches:
+              ignore: /.*/
+      - release-cli:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^cli.*/
+            branches:
+              ignore: /.*/
+      - build-cli-binaries:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^cli.*/
+            branches:
+              ignore: /.*/
+      - upload-cli-binaries:
+          requires:
+            - build-cli-binaries
+          filters:
+            tags:
+              only: /^cli.*/
+            branches:
+              ignore: /.*/
+      - upload-cli-binary-redirects:
+          requires:
+            - upload-cli-binaries
+          filters:
+            tags:
+              only: /^cli.*/
+            branches:
+              ignore: /.*/

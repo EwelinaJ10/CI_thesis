@@ -1,0 +1,43 @@
+name: Go
+on: [push]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ['1.12', '1.13', '1.14']
+    steps:
+
+    - name: Set up Go ${{ matrix.go }}
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go }}
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: Check formatting
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          gofmt -s -d .
+          exit 1
+        fi
+
+    - name: Build
+      run: go build -v .
+
+    - name: Test
+      run: go test -v .
+      env:
+        # needed by Go v1.12
+        GO111MODULE: on
+
+    - name: Integration test
+      # The test need sudo to be able to mount/umount
+      run: sudo go test -v --tags=integration .
+      env:
+        # needed by Go v1.12
+        GO111MODULE: on

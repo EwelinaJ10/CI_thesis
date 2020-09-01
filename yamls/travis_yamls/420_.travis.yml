@@ -1,0 +1,11 @@
+language: 'generic'
+
+services:
+  - docker
+
+script:
+  - ./scripts/travis/docker-build.sh
+
+branches:
+  only:
+    - master

@@ -1,0 +1,78 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:13.8.0-stretch
+    working_directory: ~/firefox-voice
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - node-modules-{{ checksum "package.json" }}
+      - run:
+          name: Install packages
+          command: sudo apt-get install -y zip unzip
+      - run:
+          name: Install Node Modules
+          command: npm install
+      - run:
+          name: Build XPI
+          command: npm run package
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./*
+      - save_cache:
+          key: node-modules-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+  test:
+    executor: docker
+    docker:
+      - image: circleci/node:13.8.0-stretch
+    environment:
+      - NODE_ENV: dev
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run lint tests
+          command: |
+            node --version
+            npm run test-ci
+  selenium_test:
+    executor: docker
+    docker:
+      - image: circleci/node:13.8.0-stretch
+    environment:
+      - NODE_ENV: dev
+      - GECKODRIVER: 0.23.0
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install Firefox
+          command: |
+            . "$NVM_DIR/nvm.sh"
+            nvm use 8.10.0
+            npm i -g get-firefox
+            get-firefox --branch nightly --platform linux --extract --target ~/
+            ~/firefox/firefox -v
+            firefox --version
+      - run:
+          name: Run Selenium test
+          command: |
+            export PATH=~/firefox:$PATH
+            FIREFOX_CHANNEL=NIGHTLY MOZ_HEADLESS=1 npm run functional-test
+
+workflows:
+  version: 2
+  build_test:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: gh-pages
+      - test:
+          requires:
+            - build

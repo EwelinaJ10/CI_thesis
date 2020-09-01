@@ -1,0 +1,29 @@
+name: Node CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          version: 10.x
+      - name: Installs yarn
+        run: npm i -g yarn
+      - name: yarn install and build
+        run: |
+          yarn
+          yarn build:action
+      - name: test
+        run: yarn test
+      - name: deploy
+        env:
+          ZEIT_TOKEN: ${{secrets.ZEIT_TOKEN}}
+        run: yarn run deploy:dev --token $ZEIT_TOKEN

@@ -1,0 +1,357 @@
+name: SQLx
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      # this is cheaper than requesting the non-minimal profile
+      - run: rustup component add rustfmt
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  check:
+    name: Check
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        runtime: [async-std, tokio, actix]
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-check-${{ matrix.runtime }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: >
+            --manifest-path sqlx-core/Cargo.toml
+            --no-default-features
+            --features offline,all-databases,all-types,migrate,runtime-${{ matrix.runtime }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: >
+            --no-default-features
+            --features offline,all-databases,all-types,migrate,runtime-${{ matrix.runtime }},macros
+
+  test:
+    name: Unit Test
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-test-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: >
+            --manifest-path sqlx-core/Cargo.toml
+            --features offline,all-databases,all-types
+
+  cli:
+    name: CLI Binaries
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            args: --features openssl-vendored
+            bin: target/debug/cargo-sqlx
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bin: target/debug/cargo-sqlx.exe
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+            bin: target/debug/cargo-sqlx
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cli-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path sqlx-cli/Cargo.toml --bin cargo-sqlx ${{ matrix.args }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cargo-sqlx-${{ matrix.target }}
+          path: ${{ matrix.bin }}
+
+  sqlite:
+    name: SQLite
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        runtime: [async-std, tokio, actix]
+    needs: check
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-sqlite-${{ matrix.runtime }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: >
+            --no-default-features
+            --features any,macros,migrate,sqlite,all-types,runtime-${{ matrix.runtime }}
+            --
+            --test-threads=1
+        env:
+          DATABASE_URL: sqlite://tests/sqlite/sqlite.db
+
+  postgres:
+    name: Postgres
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        postgres: [12, 10, 9_6, 9_5]
+        runtime: [async-std, tokio, actix]
+    needs: check
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-postgres-${{ matrix.runtime }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: >
+            --features postgres,all-types
+
+      - run: docker-compose -f tests/docker-compose.yml run -d -p 5432:5432 postgres_${{ matrix.postgres }}
+      - run: sleep 10
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: >
+            --no-default-features
+            --features any,postgres,macros,all-types,runtime-${{ matrix.runtime }}
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/sqlx
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: >
+            --no-default-features
+            --features any,postgres,macros,migrate,all-types,runtime-${{ matrix.runtime }}
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/sqlx?sslmode=verify-ca&sslrootcert=.%2Ftests%2Fcerts%2Fca.crt
+
+  mysql:
+    name: MySQL
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        mysql: [8, 5_7, 5_6]
+        runtime: [async-std, tokio, actix]
+    needs: check
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-mysql-${{ matrix.runtime }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: >
+            --features mysql,all-types
+
+      - run: docker-compose -f tests/docker-compose.yml run -d -p 3306:3306 mysql_${{ matrix.mysql }}
+      - run: sleep 60
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: >
+            --no-default-features
+            --features any,mysql,macros,migrate,all-types,runtime-${{ matrix.runtime }}
+        env:
+          DATABASE_URL: mysql://root:password@localhost:3306/sqlx
+
+  mariadb:
+    name: MariaDB
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        mariadb: [10_5, 10_4, 10_3, 10_2, 10_1]
+        runtime: [async-std, tokio, actix]
+    needs: check
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      # same Cargo features as MySQL so the same cache can be used
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-mysql-${{ matrix.runtime }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: >
+            --features mysql,all-types
+
+      - run: docker-compose -f tests/docker-compose.yml run -d -p 3306:3306 mariadb_${{ matrix.mariadb }}
+      - run: sleep 30
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: >
+            --no-default-features
+            --features any,mysql,macros,migrate,all-types,runtime-${{ matrix.runtime }}
+        env:
+          DATABASE_URL: mysql://root:password@localhost:3306/sqlx
+
+  mssql:
+    name: MSSQL
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        mssql: [2019]
+        runtime: [async-std, tokio, actix]
+    needs: check
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-mssql-${{ matrix.runtime }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: >
+            --features mssql,all-types
+
+      - run: docker-compose -f tests/docker-compose.yml run -d -p 1433:1433 mssql_${{ matrix.mssql }}
+      - run: sleep 80 # MSSQL takes a "bit" to startup
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: >
+            --no-default-features
+            --features any,mssql,macros,migrate,all-types,runtime-${{ matrix.runtime }}
+        env:
+          DATABASE_URL: mssql://sa:Password123!@localhost/sqlx

@@ -1,0 +1,57 @@
+version: 2.1
+
+defaults: &defaults
+  working_directory: /tmp/fluent-windows
+  docker:
+    - image: circleci/node:10.15.3
+
+commands:
+  install:
+    steps:
+      - restore_cache:
+          keys:
+            - v2-yarn-sha-{{ checksum "yarn.lock" }}
+            - v2-yarn-sha-
+      - run:
+          name: Install dependencies
+          command: yarn
+      - run:
+          name: Bootstrap
+          command: yarn bootstrap
+
+jobs:
+  checkout:
+    <<: *defaults
+    steps:
+      - checkout
+      - install
+      - run:
+          name: Should not have any git not staged
+          command: git diff --exit-code
+      - save_cache:
+          key: v2-yarn-sha-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn/v4
+  test_unit:
+    <<: *defaults
+    steps:
+      - checkout
+      - install
+      - run:
+          name: Build
+          command: yarn build
+      - run:
+          name: Test_unit
+          command: yarn test:prod
+
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+      - checkout:
+          filters:
+            branches:
+              ignore: l10n
+      - test_unit:
+          requires:
+            - checkout

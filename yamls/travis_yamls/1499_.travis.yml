@@ -1,0 +1,17 @@
+language: cpp
+group: travis_latest
+
+git:
+  depth: false
+  quiet: true
+
+os:
+  - linux
+  - osx
+  
+compiler:
+  - clang
+  - gcc
+
+script:
+  - make 

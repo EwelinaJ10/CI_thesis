@@ -1,0 +1,119 @@
+image:
+- Visual Studio 2017
+#- Ubuntu
+
+configuration:
+-  Debug
+#-  Release
+
+platform:
+  - x64
+
+clone_script:
+- ps: git clone -q $("--branch=" + $env:APPVEYOR_REPO_BRANCH) $("https://github.com/" + $env:APPVEYOR_REPO_NAME + ".git") $env:APPVEYOR_BUILD_FOLDER
+- ps: if (!$env:APPVEYOR_PULL_REQUEST_NUMBER) {$("git checkout -qf " + $env:APPVEYOR_REPO_COMMIT)}
+- ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER) {git fetch -q origin +refs/pull/$($env:APPVEYOR_PULL_REQUEST_NUMBER)/merge; git checkout -qf FETCH_HEAD}
+- ps: git submodule update -q --init --recursive
+
+cache:
+  c:\tools\vcpkg\installed
+  c:\tools\vcpkg\downloads
+  c:\tools\vcpkg\packages
+  c:\tools\vcpkg\buildtrees
+
+environment:
+  COVERALLS_REPO_TOKEN:
+    secure: OeiEbVD/GyXcTszuevj0hbzNY+qPceIbh9EP/3Dk+13B5mQbGYx6mXrrlqYYOtZ/
+
+branches:
+  only:
+  - master
+
+init:
+- ps: |
+    env
+    Write-Host "APPVEYOR_BUILD_WORKER_IMAGE ->  $env:APPVEYOR_BUILD_WORKER_IMAGE"
+    Write-Host "PLATFORM is $env:Platform"
+    Write-Host "CONFIGURATION is $env:Configuration"
+    Write-Host "cmake -DCMAKE_BUILD_TYPE=$($env:Configuration)"
+    Write-Host "cmake --build . --config $($env:Configuration)"
+
+install:
+- ps: |
+    if ($isWindows) {
+          cd C:\tools\vcpkg
+          git --no-pager log --decorate=short --pretty=oneline -n10
+          git pull
+          vcpkg install boost-filesystem:x64-Windows boost-stacktrace:x64-Windows gtest:x64-Windows entt:x64-Windows eastl:x64-Windows boost-dll:x64-Windows lua:x64-Windows sol2:x64-Windows python3:x64-Windows pybind11:x64-Windows
+          cd $env:APPVEYOR_BUILD_FOLDER
+        } else {
+          pip install --user cpp-coveralls
+          git clone https://github.com/Microsoft/vcpkg.git /home/appveyor/projects/vcpkg
+          cd /home/appveyor/projects/vcpkg
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          (sudo apt-get update -y) -and (sudo apt-get install g++-7 -y) -and (sudo apt-get install make -y)
+          sudo apt-get install lcov -y
+          sh bootstrap-vcpkg.sh
+          ./vcpkg install gtest entt eastl boost-stacktrace boost-filesystem boost-dll
+          cd /home/appveyor/projects/shiva
+        }
+
+build_script:
+  - ps: |
+      mkdir build
+      cd build
+      if ($isWindows) {
+            cmake -DCMAKE_BUILD_TYPE="$($env:Configuration)" -DSHIVA_BUILD_TESTS=ON -DSHIVA_BUILD_EXAMPLES=ON -G "Visual Studio 15 2017 Win64" .. -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+            cmake --build . --config $($env:Configuration) -- /verbosity:minimal /maxcpucount:3
+          } else {
+            if ($env:Configuration -eq "Debug") {
+              cmake -DCMAKE_TOOLCHAIN_FILE="/home/appveyor/projects/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE="$($env:Configuration)" -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 -DSHIVA_BUILD_TESTS=ON -DSHIVA_BUILD_EXAMPLES=ON -DPROJECT_COVERAGE=1 ..
+            } else {
+              cmake -DCMAKE_TOOLCHAIN_FILE="/home/appveyor/projects/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE="$($env:Configuration)" -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7 -DSHIVA_BUILD_TESTS=ON -DSHIVA_BUILD_EXAMPLES=ON ..
+            }
+            cmake --build . --config $($env:Configuration)
+          }
+
+test_script:
+- ps: |
+    ctest --no-compress-output -T Test -C $env:Configuration
+    cd ../bin
+    if ($isWindows) {
+      $filePattern = '*-test.exe'
+    } else {
+      $filePattern = '*-test'
+    }
+    foreach ($file in get-ChildItem $filePattern)
+    {
+      $var = $file.name
+      & ./$var --gtest_output="xml:$var-result.xml"
+    }
+    cd ..
+    mkdir test-result
+    cd test-result
+    mkdir ctest
+    cd ..
+    cp bin/*.xml test-result
+    cp build/Testing/*/*.xml test-result/ctest
+
+on_success:
+  - ps: |
+      if (($isLinux) -and ($env:Configuration -eq "Debug")) {
+        coveralls --gcov gcov-7 --gcov-options '\-lp' --root $env:APPVEYOR_BUILD_FOLDER --build-root $env:APPVEYOR_BUILD_FOLDER/build --extension cpp --extension hpp --include modules --include tests
+      }
+
+on_finish:
+  - ps: |
+      cd test-result/ctest
+      $XSLInputElement = New-Object System.Xml.Xsl.XslCompiledTransform
+      $XSLInputElement.Load("https://raw.githubusercontent.com/rpavlik/jenkins-ctest-plugin/master/ctest-to-junit.xsl")
+      $XSLInputElement.Transform((Resolve-Path .\Test.xml), (Join-Path (Resolve-Path .) "ctest-to-junit-results.xml"))
+      $wc = New-Object 'System.Net.WebClient'
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\ctest-to-junit-results.xml))
+      cd ..
+      foreach ($file in get-ChildItem *.xml)
+      {
+        echo $file.name
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $file.name))
+      }
+      echo "finish"

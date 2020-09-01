@@ -1,0 +1,12 @@
+install:
+  - npm install gitbook-cli -g
+  - sudo pip install mkdocs
+  - chmod +x scripts/travis.sh
+script: 
+  - scripts/travis.sh script
+after_success: 
+  - scripts/travis.sh after_success
+branches:
+ only:
+  - master
+  - java-chassis-1.x

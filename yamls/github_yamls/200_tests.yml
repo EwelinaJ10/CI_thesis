@@ -1,0 +1,63 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: "${{ matrix.pymc-version }} on py${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.8"]
+        pymc-version: ["pymc3==3.8", "pymc3>=3.9,<3.10"]
+        include:
+          - python-version: "3.8"
+            pymc-version: "https://github.com/pymc-devs/pymc3/archive/master.zip"
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Cache dependencies
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('setup.py') }}
+          restore-keys: |
+            pip-
+
+      # Setup
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip setuptools numpy pybind11 wheel
+          python -m pip install "${{ matrix.pymc-version }}"
+          python -m pip wheel --wheel-dir=~/.cache/pip/exoplanet --find-links=~/.cache/pip/exoplanet .[test]
+          python -m pip install -U --find-links=~/.cache/pip/exoplanet -e .[test]
+          python -c 'import theano; print(theano.config.__str__(print_doc=False))'
+
+      - name: Run tests
+        run: python -m pytest --cov=exoplanet -v tests
+
+      # Uploading coverage report
+      - name: Upload coverage
+        if: success()
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          if [ -z "$COVERALLS_REPO_TOKEN" ]; then
+            echo "Skipping on pull requests"
+          else
+            coveralls
+          fi

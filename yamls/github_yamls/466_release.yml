@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Validates GoReleaser Config
+        uses: docker://mailchain/goreleaser-xcgo:latest
+        with:
+          args: check
+      -
+        name: Create release on GitHub
+        uses: docker://mailchain/goreleaser-xcgo:latest
+        with:
+          args: --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

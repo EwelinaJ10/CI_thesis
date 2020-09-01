@@ -1,0 +1,98 @@
+version: 2.1
+
+map-1: &filter_only_master
+  filters:
+    branches:
+      only:
+        - master
+
+map-2: &filter_only_dev
+  filters:
+    branches:
+      only:
+        - dev
+
+map-3: &filter_ignore_dev
+  filters:
+    branches:
+      ignore:
+        - dev
+
+test: &test
+  parameters:
+    coverage:
+      type: boolean
+      default: true
+  steps:
+    - checkout
+    - run: node --version
+    - run: npm install
+    - run: npm run test
+
+executors:
+
+  docker-circleci:
+    parameters:
+      node:
+        type: string
+        default: "10.12"
+    working_directory: ~/repo
+    docker:
+      - image: "circleci/node:<< parameters.node >>-stretch-browsers"
+
+jobs:
+
+  build:
+    executor: docker-circleci
+    steps:
+      - checkout
+      - run: npm ci
+      - run: npm run build
+
+  lint:
+    executor: docker-circleci
+    steps:
+      - checkout
+      - run: npm ci
+      - run: npm run lint
+
+  bundle:
+    executor: docker-circleci
+    steps:
+      - checkout
+      - run: npm ci
+      - run: npm run bundle
+
+  test-8:
+    <<: *test
+    executor:
+      name: docker-circleci
+      node: "8.16.1"
+
+  test-10:
+    <<: *test
+    executor:
+      name: docker-circleci
+      node: "10.12"
+
+  test-12:
+    <<: *test
+    executor:
+      name: docker-circleci
+      node: "12.9"
+
+workflows:
+  build_test:
+    jobs:
+      - build:
+          <<: *filter_ignore_dev
+      - lint:
+          <<: *filter_ignore_dev
+      - bundle:
+          <<: *filter_ignore_dev
+      - test-8:
+          <<: *filter_ignore_dev
+      - test-10:
+          <<: *filter_ignore_dev
+      - test-12:
+          <<: *filter_ignore_dev

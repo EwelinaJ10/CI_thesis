@@ -1,0 +1,16 @@
+language: php
+
+php:
+  - 7.2
+  - 7.3
+  - 7.4
+
+install:
+  - composer install --no-interaction
+
+script:
+  - composer validate --strict
+  - vendor/bin/phpcs --standard=php_cs.xml src/
+  - vendor/bin/phpunit tests/unit/
+  - php phpat
+  - php phpat tests/functional/functional.yaml

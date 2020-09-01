@@ -1,0 +1,239 @@
+version: 2
+
+templates:
+  docker_job_template: &docker_job_template
+    docker:
+      - image: golang:1.13
+    working_directory: /go/src/github.com/DataDog/pupernetes
+
+  machine_job_template: &machine_job_template
+    machine: true
+    working_directory: /home/circleci/.go_workspace/src/github.com/DataDog/pupernetes
+    environment:
+      CFLAGS: ""
+      CGO_ENABLED: "1"
+      DEBIAN_FRONTEND: "noninteractive"
+      SUDO_USER: "circleci"
+
+jobs:
+  build:
+    <<: *docker_job_template
+    steps:
+      - checkout
+      - run:
+          name: make
+          command: make
+
+  tests:
+    <<: *docker_job_template
+    steps:
+      - checkout
+      - run:
+          name: tests
+          command: make check
+
+  gofmt:
+    <<: *docker_job_template
+    steps:
+      - checkout
+      - run:
+          name: verify-gofmt
+          command: make verify-gofmt
+
+  docs:
+    <<: *docker_job_template
+    steps:
+      - checkout
+      - run:
+          name: verify-docs
+          command: make verify-docs
+
+  license:
+    <<: *docker_job_template
+    steps:
+      - checkout
+      - run:
+          name: verify-license
+          command: make verify-license
+
+  misc:
+    <<: *docker_job_template
+    steps:
+      - checkout
+      - run:
+          name: goget
+          command: make goget
+      - run:
+          name: verify-misc
+          command: make verify-misc
+
+  setup_fg:
+    <<: *machine_job_template
+    steps:
+      - checkout
+      - run:
+          name: make
+          command: make pupernetes-docker
+      - run:
+          name: apt
+          command: sudo apt-get update -q && sudo apt-get install -yq systemd libseccomp2
+      - run:
+          name: setup
+          command: sudo ./pupernetes daemon setup sandbox/ -v 5 --kubeconfig-path $HOME/.kube/config
+
+      - run:
+          name: already-setup
+          # As it's already setup, pupernetes should be very fast
+          command: sudo timeout 15 ./pupernetes daemon setup sandbox/ --kubeconfig-path $HOME/.kube/config
+
+      - run:
+          name: clean-setup
+          # As we kept the binaries, pupernetes should be very fast
+          command: sudo timeout 15 ./pupernetes daemon setup sandbox/ -c etcd,iptables,kubectl,kubelet,manifests,mounts,network,secrets --kubeconfig-path $HOME/.kube/config
+
+      - run:
+          name: clean-setup-shortcut
+          # As we kept the binaries, pupernetes should be very fast
+          command: sudo timeout 15 ./pupernetes daemon setup sandbox/ -k binaries --kubeconfig-path $HOME/.kube/config
+
+      - run:
+          name: version-setup
+          # Clean everything but the binaries and download and extract the outdated hyperkube tarball
+          command: sudo ./pupernetes daemon setup sandbox/ --hyperkube-version 1.9.4 -k binaries --kubeconfig-path $HOME/.kube/config
+
+      - run:
+          name: clean-but-binaries
+          # Clean everything but the binaries
+          command: sudo ./pupernetes daemon clean sandbox/ -k binaries --kubeconfig-path $HOME/.kube/config
+
+      - run:
+          name: rm-kubectl
+          command: rm -v $HOME/.kube/config
+
+      - run:
+          name: kubectl-setup
+          command: sudo ./pupernetes daemon setup sandbox/ --hyperkube-version 1.9.4
+
+      - run:
+          name: kubectl-ok
+          command: ls -l $HOME/.kube/config && cat $HOME/.kube/config
+
+      - run:
+          name: clean
+          command: sudo ./pupernetes daemon clean sandbox/ -c all
+
+  run_fg:
+    <<: *machine_job_template
+    steps:
+      - checkout
+      - run:
+          name: make
+          command: make pupernetes-docker
+      - run:
+          name: apt
+          command: sudo apt-get update -q && sudo apt-get install -yq systemd libseccomp2
+
+      - run:
+          name: setup
+          command: sudo ./pupernetes daemon setup sandbox/ -v 5 --kubeconfig-path $HOME/.kube/config
+
+      - run:
+          name: copy-validation
+          # Copy a batch validation job where the manifests are applied once pupernetes apiserver is available =)
+          command: sudo cp -v .ci/pupernetes-validation.yaml sandbox/manifest-api/pupernetes-validation.yaml
+
+      - run:
+          name: run-docker
+          command: sudo timeout 600 ./pupernetes daemon run sandbox/ --bind-address 0.0.0.0:8989 --kubeconfig-path $HOME/.kube/config
+
+      - run:
+          name: run-containerd
+          command: sudo timeout 600 ./pupernetes daemon run sandbox/ --bind-address 0.0.0.0:8989 --kubeconfig-path $HOME/.kube/config --container-runtime containerd
+
+      - run:
+          name: clean
+          command: sudo ./pupernetes daemon clean sandbox/ -c all
+
+  run_systemd:
+    <<: *machine_job_template
+    steps:
+      - checkout
+      - run:
+          name: make
+          command: make pupernetes-docker
+      - run:
+          name: apt
+          command: sudo apt-get update -q && sudo apt-get install -yq systemd libseccomp2
+
+      - run:
+          name: run
+          command: sudo ./pupernetes daemon run sandbox/ --job-type systemd -v 5 --kubectl-link /usr/local/bin/kubectl --bind-address 0.0.0.0:8989 --kubeconfig-path $HOME/.kube/config --dns-check
+
+      - run:
+          name: kubectl
+          # kubectl some stuff
+          command: kubectl config view && kubectl version && kubectl get no,svc,deploy,ds,job,po --all-namespaces -o wide
+
+      - run:
+          name: validation
+          command: make ci-validation
+
+  sonobuoy:
+    <<: *machine_job_template
+    steps:
+      - checkout
+      - run:
+          name: make
+          command: make pupernetes-docker
+      - run:
+          name: apt
+          command: sudo apt-get update -q && sudo apt-get install -yq systemd libseccomp2
+
+      - run:
+          name: run
+          command: sudo ./pupernetes daemon run sandbox/ --job-type systemd -v 5 --kubectl-link /usr/local/bin/kubectl --bind-address 0.0.0.0:8989 --kubeconfig-path $HOME/.kube/config --dns-check
+
+      - run:
+          name: kubectl
+          # kubectl some stuff
+          command: kubectl config view && kubectl version && kubectl get no,svc,deploy,ds,job,po --all-namespaces -o wide
+
+      - run:
+          name: sonobuoy
+          command: make ci-sonobuoy
+
+      - run:
+          name: reset
+          command: ./pupernetes reset default kube-system --apply
+
+      - run:
+          name: validation
+          command: make ci-validation
+
+
+workflows:
+  version: 2
+  pupernetes:
+    jobs:
+      - build
+      - tests
+      - gofmt
+      - docs
+      - license
+      - misc
+      - setup_fg:
+          requires:
+            - build
+            - tests
+      - run_fg:
+          requires:
+            - build
+            - tests
+      - run_systemd:
+          requires:
+            - build
+            - tests
+      - sonobuoy:
+         requires:
+           - build
+           - tests

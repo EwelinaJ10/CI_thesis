@@ -1,0 +1,37 @@
+name: SwiftPlot Ubuntu
+
+on:
+  push:
+    branches: master
+  pull_request:
+
+env:
+  SWIFT_VERSION: 5.2.1
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Freetype
+      run: sudo apt-get install libfreetype6-dev
+    - name: Install Swift Dependencies
+      run: sudo apt-get install clang libicu-dev
+    - name: Download Swift
+      run: wget "https://swift.org/builds/swift-${{ env.SWIFT_VERSION }}-release/ubuntu1804/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-ubuntu18.04.tar.gz"
+    - name: Install Swift
+      run: |
+        tar xzf swift-${{ env.SWIFT_VERSION }}-RELEASE-ubuntu18.04.tar.gz
+        echo "::add-path::$(pwd)/swift-${{ env.SWIFT_VERSION }}-RELEASE-ubuntu18.04/usr/bin"
+    - name: Build
+      run: swift build -v
+    - name: Run tests
+      run: swift test -v
+    - name: Upload test artefacts
+      uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: images
+        path: ./output

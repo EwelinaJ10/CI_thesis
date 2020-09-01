@@ -1,0 +1,150 @@
+name: CI/CD
+on:
+  push:
+    branches:
+      - master
+      - gh-pages
+  pull_request:
+
+jobs:
+  js-lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Read .nvmrc
+        run: echo ::set-output name=NVMRC::$(cat .nvmrc)
+        id: nvm
+      - name: Use Node.js ${{ steps.nvm.outputs.NVMRC }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Restore cached yarn cache
+        uses: actions/cache@v2
+        id: cache-yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Restore cached node_modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ steps.nvm.outputs.NVMRC }}-nodemodules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.nvm.outputs.NVMRC }}-nodemodules-
+      - name: Install JS dependencies
+        if: |
+          steps.cache-yarn-cache.outputs.cache-hit != 'true' ||
+          steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile --prefer-offline
+      - name: Lint
+        run: yarn lint
+      - name: Test
+        run: yarn test
+      - name: Notify deploy failed (#general)
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: pullreminders/slack-action@v1.0.9
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.DEFUND12_SLACK_DEPLOY_BOT_TOKEN }}
+        with:
+          args: '{\"channel\":\"C014Q9PLEMC\",\"text\":\":warning: Failed to deploy <https://github.com/defund12/defund12.org/commit/${{ github.sha }}|latest commit> on `master` due to issues with `${{ github.job }}` job\"}'
+      - name: Notify deploy failed (#deploys)
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: pullreminders/slack-action@v1.0.9
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.DEFUND12_SLACK_DEPLOY_BOT_TOKEN }}
+        with:
+          args: '{\"channel\":\"C0153GJV1GV\",\"text\":\":warning: Failed to deploy <https://github.com/defund12/defund12.org/commit/${{ github.sha }}|latest commit> on `master` due to issues with `${{ github.job }}` job\"}'
+  py-markdown-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        uses: docker://docker
+        with:
+          args: docker build ./test/markdown/ --tag=markdown-tests:latest
+      - name: Test
+        uses: docker://docker
+        with:
+          args: docker run -v /home/runner/work/defund12.org/defund12.org/_emails:/email_markdown_files markdown-tests:latest
+      - name: Notify deploy failed (#general)
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: pullreminders/slack-action@v1.0.9
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.DEFUND12_SLACK_DEPLOY_BOT_TOKEN }}
+        with:
+          args: '{\"channel\":\"C014Q9PLEMC\",\"text\":\":warning: Failed to deploy <https://github.com/defund12/defund12.org/commit/${{ github.sha }}|latest commit> on `master` due to issues with `${{ github.job }}` job\"}'
+      - name: Notify deploy failed (#deploys)
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: pullreminders/slack-action@v1.0.9
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.DEFUND12_SLACK_DEPLOY_BOT_TOKEN }}
+        with:
+          args: '{\"channel\":\"C0153GJV1GV\",\"text\":\":warning: Failed to deploy <https://github.com/defund12/defund12.org/commit/${{ github.sha }}|latest commit> on `master` due to issues with `${{ github.job }}` job\"}'
+  build-and-deploy:
+    needs: [js-lint-and-test, py-markdown-test]
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Read .nvmrc
+        run: echo ::set-output name=NVMRC::$(cat .nvmrc)
+        id: nvm
+      - name: Use Node.js ${{ steps.nvm.outputs.NVMRC }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Restore cached yarn cache
+        uses: actions/cache@v2
+        id: cache-yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Restore cached node_modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ steps.nvm.outputs.NVMRC }}-nodemodules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.nvm.outputs.NVMRC }}-nodemodules-
+      - name: Install JS dependencies
+        if: |
+          steps.cache-yarn-cache.outputs.cache-hit != 'true' ||
+          steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile --prefer-offline
+      - run: mkdir public
+      - name: build
+        run: yarn build
+      - name: Deploy (push to gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.DEFUND12_GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./public
+      - name: Set COMMIT_MSG
+        run: echo ::set-env name=COMMIT_MSG::$(git log --format=%s -n 1)
+      - name: Notify deploy succeeded (#deploys)
+        if: success()
+        uses: pullreminders/slack-action@v1.0.9
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.DEFUND12_SLACK_DEPLOY_BOT_TOKEN }}
+        with:
+          args: '{\"channel\":\"C0153GJV1GV\",\"text\":\":white_check_mark: Deployed <https://github.com/defund12/defund12.org/commit/${{ github.sha }}|${{ env.COMMIT_MSG }}>\"}'
+      - name: Notify deploy failed (#deploys)
+        if: failure()
+        uses: pullreminders/slack-action@v1.0.9
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.DEFUND12_SLACK_DEPLOY_BOT_TOKEN }}
+        with:
+          args: '{\"channel\":\"C0153GJV1GV\",\"text\":\":warning: Failed to deploy <https://github.com/defund12/defund12.org/commit/${{ github.sha }}|latest commit> on `master` due to issues with `${{ github.job }}` job\"}'

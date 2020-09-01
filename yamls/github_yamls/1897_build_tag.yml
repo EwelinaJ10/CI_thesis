@@ -1,0 +1,51 @@
+name: Build and push a release image
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build:
+    runs-on: [ubuntu-18.04]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build Antrea Docker image and push to registry
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        TAG: ${{ github.ref }}
+      run: |
+        VERSION="${TAG:10}" make
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        docker push antrea/antrea-ubuntu:"${TAG:10}"
+
+  build-windows:
+    runs-on: [windows-2019]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build Antrea Windows Docker image and push to registry
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        TAG: ${{ github.ref }}
+      run: |
+        export VERSION="${TAG:10}"
+        make build-windows
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        docker push antrea/antrea-windows:"${TAG:10}"
+      shell: bash
+
+  build-octant-antrea-ubuntu:
+    runs-on: [ubuntu-18.04]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build octant-antrea-ubuntu Docker image and push to registry
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          TAG: ${{ github.ref }}
+        run: |
+          VERSION="${TAG:10}" make octant-antrea-ubuntu
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          docker push antrea/octant-antrea-ubuntu:"${TAG:10}"

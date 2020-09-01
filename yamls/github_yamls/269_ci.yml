@@ -1,0 +1,43 @@
+name: Master
+
+on: 
+   push:
+     branches : 
+       - master
+   pull_request:
+     branches : 
+       - master
+
+jobs:
+  MacOS:
+
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: use Setup-Scheme
+      uses: guenchi/setup-scheme@master
+      with:
+        implementation: chez
+           
+    - name: install Raven
+      run: |
+           cd /usr/local/bin
+           cp chez scheme
+           curl -L http://ravensc.com/install | scheme
+           
+    - name: install NumPy
+      run: pip3 install numpy
+      
+    - name: Testing
+      run: |
+           git clone https://github.com/guenchi/Darkart
+           mkdir lib
+           mv darkart lib/darkart
+           cd lib/darkart/c
+           cc -fPIC -shared  -L/Library/Frameworks/Python.framework/Versions/3.7/lib/ -lpython3.7 -o ../py.so py.c
+           cd ../..
+           raven run test/test-pycall.sc
+   

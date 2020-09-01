@@ -1,0 +1,35 @@
+language: node_js
+
+node_js:
+  - "12.7.0"
+
+os:
+  - osx
+
+osx_image: xcode11.3
+
+install:
+  - npm i
+
+script:
+  - npm run dlgeo
+  - npm run dlcore -- --all
+  - npm test
+  - npm run distmac
+  - USE_HARD_LINKS=false npm run distwin
+  - npm run distlinux
+  - ls -la dist
+
+deploy:
+  provider: releases
+  api_key:
+    secure: TkUl9FEUPwwSlyn5cHoBl6/k7iELyUJ2LXxjeE3FILVbF17y155rZ8tQVixnQwZQP5cptQ6tTf2/DdEqbWfF1Mc0k45bvTl5Aj4/FCXS+V6iSIkj/jNcdqR7dv5XU1+L0Xy9RnAy/7NAwcknhpLeR5kEV8jKNjPKwfDYHeDtnkb6Lx8Z3lo1MDXlV6/umY6OGH0kUH7WH7KxD3iHGy/yn+GrdzYFH6y0sKNhSa+7rKS1o/axiAkTjDfTyfHroRtaF5eZZbw6CwCI1RTvtJfr885hbKGLTa5kF/WVW8wMWJ++eykv3w8I0LiLi2/F7lG7Okdnzrh91SQ3v0zqRfY80WLm3nvD2CW9kvveDlUOW06YYk/fYmChxUGPeEwC2e2HTsJ31jNGXTNx/tKWCi63jZ4KoWZ1WmZLkQvVtKgwGl3oCsZqJgGHDcsIru+Brj9paBlVpocKM8NK7bMrLBgT/LvQdxlRK9clUkjjLbOmdeYbd/rOrdUc9EJ/3bkVyCuy9CQN/UnYjPUqD4aO35762EN5929C4U3JXWCphi2l4e4rp7nFd/+pGyRUNR9APsmT+A80vi5/CkLh3IoLYG5BYr1iHFYHJWiFyysq/EDYbE9QaQvdk/oYxo85v9nW177nE0YGRtHexcngnUI/1C6D4RSlv417EOaSNnT81ayQ7f4=
+  file_glob: true
+  file:
+    - "dist/Mellow Setup*.exe"
+    - "dist/Mellow*.dmg"
+    - "dist/Mellow*.AppImage"
+  overwrite: true
+  skip_cleanup: true
+  on:
+    tags: true

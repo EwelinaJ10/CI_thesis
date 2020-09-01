@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: kubesail/dna-test:13
+    working_directory: ~/repo
+    steps:
+      - checkout
+
+      - run:
+          name: Installing
+          command: yarn --no-progress --no-emoji --prefer-offline
+
+      - run:
+          name: Linting
+          command: ./bin/lint.sh
+
+      - run:
+          name: set Kubeconfig
+          command: echo "$DNA_KUBECONFIG" | base64 -d > kubeconfig.yaml
+
+      - run:
+          name: Testing
+          command: ./bin/test.sh
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build

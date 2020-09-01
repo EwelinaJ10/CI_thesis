@@ -1,0 +1,48 @@
+# Python Package
+#
+# Automatically build and test the package for supported Python 3.x versions.
+#
+
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python: [3.6, 3.7, 3.8]
+    name: Python ${{ matrix.python }} ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Setup Conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          activate-conda: true
+          python-version: ${{ matrix.python }}
+          conda-channels: pytorch
+      - name: Install Requirements
+        run: |
+          conda install pytorch torchvision cpuonly -c pytorch
+          pip install poetry invoke pillow --force
+      - name: Setup Dependencies
+        run: |
+          poetry config virtualenvs.create false
+          poetry install
+      - name: Run Automated Tests
+        run: |
+          poetry run pytest -c tasks/pytest.ini -v -k "not test_api"
+      - name: Run API Test Suite
+        run: |
+          poetry run pytest -c tasks/pytest.ini -v -k test_api --suite=fast
+      - name: Create Package
+        run: |
+          poetry build

@@ -1,0 +1,31 @@
+name: docs
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js 12
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12
+
+    - name: Set git identity
+      run: |
+        git config --global user.name "Martin Adámek"
+        git config --global user.email "banan23@gmail.com"
+
+    - name: Build docs
+      run: |
+        cd docs
+        yarn
+        yarn deploy
+      env:
+        GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -1,0 +1,19 @@
+name: Update the DeTT&CT Editor on GitHub Pages
+on:
+  push:
+    branches: [ master ]
+    paths: 'editor/dist/dettect-editor/**'
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+    - uses: actions/checkout@v2
+
+    - name: Update DeTT&CT Editor
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        personal_token: ${{ secrets.PERSONAL_TOKEN }}
+        external_repository: rabobank-cdc/dettect-editor
+        publish_branch:  master
+        publish_dir: ./editor/dist/dettect-editor

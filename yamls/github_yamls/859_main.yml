@@ -1,0 +1,43 @@
+name: Notification on push
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Check syntax
+        run: |
+          yarn install
+          yarn lint
+
+      - name: Slack notification FAILED
+        uses: Ilshidur/action-slack@master
+        if: failure()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_AVATAR: sender # optional: repository, sender or ImageURL
+        with:
+          args: "Lint checks *FAILED* \nfrom {{ GITHUB_ACTOR }} at {{ GITHUB_REPOSITORY }}"
+
+      - name: Slack notification SUCCESS
+        uses: Ilshidur/action-slack@master
+        if: success()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        with:
+          args: "Lint checks *SUCCESSFUL!* \nfrom {{ GITHUB_ACTOR }} at {{ GITHUB_REPOSITORY }}"

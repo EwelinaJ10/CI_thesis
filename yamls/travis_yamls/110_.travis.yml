@@ -1,0 +1,51 @@
+language: python
+
+# Supported Python versions
+dist: xenial  # required for Python >= 3.7
+python:
+  - 3.7
+  - 3.6
+
+# Supported PyTorch versions
+env:
+  - PYTORCH=1.4.0
+  - PYTORCH=1.3.1
+  - PYTORCH=1.3.0
+  - PYTORCH=1.2.0
+  - PYTORCH=1.1.0
+
+stages:
+  - lint
+  - test
+
+# Run Lint first with Python 3.7 and PyTorch 1.2.0.
+jobs:
+  include:
+    - stage: lint
+      install:
+        - pip install torch==$PYTORCH
+        - pip install flake8 mypy
+        - lint () { flake8 "$1" && mypy "$1"; }
+      script:
+        - lint torchgpipe
+        - lint tests
+        - lint benchmarks/models/resnet
+        - lint benchmarks/models/amoebanet
+        - lint benchmarks/models/unet
+        - lint benchmarks/amoebanetd-memory
+        - lint benchmarks/amoebanetd-speed
+        - lint benchmarks/resnet101-accuracy
+        - lint benchmarks/resnet101-speed
+        - lint benchmarks/unet-memory
+        - lint benchmarks/unet-speed
+        - lint benchmarks/unet-timeline
+
+# Test with various Python and PyTorch versions.
+install:
+  - pip install pytest-cov coveralls
+  - pip install torch==$PYTORCH
+  - python setup.py install
+script:
+  - PYTEST_ADDOPTS='--cov torchgpipe' python setup.py test
+after_success:
+  - coveralls

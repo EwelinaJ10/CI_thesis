@@ -1,0 +1,300 @@
+# Github workflow files do not support YAML anchors.
+
+name: CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  check:
+    name: Check / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: stable
+      - name: Chown cargo registry because of caching
+        run: sudo chown -R runner ~/.cargo/registry
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache target
+        id: cache-target
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: check-target-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+      - name: Cleanup for caching
+        uses: actions-rs/cargo@v1
+        with:
+          command: clean
+          args: --package dotenv-linter
+        if: steps.cache-target.outputs.cache-hit != 'true'
+
+  fmt:
+    name: Rustfmt / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Clippy / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: stable
+          components: clippy
+      - name: Chown cargo registry because of caching
+        run: sudo chown -R runner ~/.cargo/registry
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache target
+        id: cache-target
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: clippy-target-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Check with Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+      - name: Cleanup for caching
+        uses: actions-rs/cargo@v1
+        with:
+          command: clean
+          args: --package dotenv-linter
+        if: steps.cache-target.outputs.cache-hit != 'true'
+  #   - uses: actions-rs/clippy-check@v1
+  #     with:
+  #       token: ${{ secrets.GITHUB_TOKEN }}
+  #       args: --all-features -- -D warnings
+
+  build:
+    name: Build / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: stable
+      - name: Chown cargo registry because of caching
+        run: sudo chown -R runner ~/.cargo/registry
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache target
+        id: cache-target
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: build-target-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+      - name: Cleanup for caching
+        uses: actions-rs/cargo@v1
+        with:
+          command: clean
+          args: --package dotenv-linter
+        if: steps.cache-target.outputs.cache-hit != 'true'
+
+  test:
+    name: Test and coverage / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - name: Chown cargo registry because of caching
+        run: sudo chown -R runner ~/.cargo/registry
+      - name: Set grcov version
+        run: echo "::set-env name=GRCOV_VERSION::$(cargo search --limit 1 grcov | head -n1 | cut -d '"' -f2)"
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: test-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache target
+        id: cache-target
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: test-target-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      # actions/cache does not cache files, only directories, so we handle the Grcov executable separately.
+      - name: Cache grcov
+        id: cache-grcov
+        uses: actions/cache@v1
+        with:
+          path: ~/grcov
+          key: grcov-${{ env.GRCOV_VERSION }}
+      - name: Install grcov
+        run: |
+          mkdir -p ~/grcov
+          cargo install --root ~/grcov --version $GRCOV_VERSION grcov
+        if: steps.cache-grcov.outputs.cache-hit != 'true'
+      - name: Copy grcov from cache
+        run: cp ~/grcov/bin/grcov ~/.cargo/bin
+      - name: Clean coverage
+        run: |
+          rm -f target/debug/deps/*.gcda
+          rm -f target/debug/deps/*.gcno
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features --no-fail-fast
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: |
+            -Zprofile -Zpanic_abort_tests -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort
+      - uses: actions-rs/grcov@v0.1
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ./lcov.info
+      - name: Cleanup for caching
+        uses: actions-rs/cargo@v1
+        with:
+          command: clean
+          args: --package dotenv-linter
+        if: steps.cache-target.outputs.cache-hit != 'true'
+
+  linux_install:
+    name: Install / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup dotenv-linter
+        run: |
+          mkdir -p $HOME/bin
+          sh "${GITHUB_WORKSPACE}/install.sh" -b $HOME/bin
+      - name: Verify successful installation
+        run: $HOME/bin/dotenv-linter -v
+
+  windows_build:
+    name: Build / Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: stable
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache target
+        id: cache-target
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: build-target-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+      - name: Cleanup for caching
+        uses: actions-rs/cargo@v1
+        with:
+          command: clean
+          args: --package dotenv-linter
+        if: steps.cache-target.outputs.cache-hit != 'true'
+
+  windows_test:
+    name: Test / Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: test-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache target
+        id: cache-target
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: test-target-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features --no-fail-fast
+      - name: Cleanup for caching
+        uses: actions-rs/cargo@v1
+        with:
+          command: clean
+          args: --package dotenv-linter
+        if: steps.cache-target.outputs.cache-hit != 'true'
+
+  windows_install:
+    name: Install / Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup dotenv-linter
+        shell: bash # it uses Git Bash, i.e. MinGW
+        run: |
+          mkdir -p $HOME/bin
+          sh "${GITHUB_WORKSPACE}/install.sh" -b $HOME/bin
+      - name: Verify successful installation
+        shell: bash
+        run: $HOME/bin/dotenv-linter.exe -v
+
+  macos_install:
+    name: Install / MacOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup dotenv-linter
+        run: |
+          mkdir -p $HOME/bin
+          sh "${GITHUB_WORKSPACE}/install.sh" -b $HOME/bin
+      - name: Verify successful installation
+        run: $HOME/bin/dotenv-linter -v

@@ -1,0 +1,88 @@
+language: generic
+sudo: required
+dist: bionic
+
+services:
+  - docker
+
+cache:
+  timeout: 600
+  directories:
+  - $HOME/.cache
+  - $HOME/.docker/images
+
+matrix:
+  fast_finish: true
+
+  include:
+    - os: linux
+      addons:
+        apt:
+          packages: ['wget', 'ffmpeg']
+
+env:
+  global:
+  - secure: Wku4Wz/LFyRUe49M1oD1/fa3IBBPua2jXq4yWf3H4XzJMdDkUxc28cfd9TXydqWYJE9YG7K+0vkkypazgaY5OMMEEHqpgCob5nhL6fCEPrLV2s12XLGm2d0dStiwvhYQlhpOU32/DGty5jRWT1R3kRfK0vj5Ji60ETZ2A6NIokQ6pb67YuItksjm72NnJ2DMeM/ugM62ujj1VMdHzUrvjGKSfhNJpsreJQZEHbfTtGcYit+AjAn0UyzglcKPBnXGfpdZ04DtVyXh9p+oVXU0pKMYLVd4Hvc8I0eUX9NeISYbxQO3XP3hvXwr6G3FO5YSMuYXBQYPfKkpfZ8hgYIFHWy+IDxh6i0CGtlkIitoc+spEfoOo7HqXT8hvhiEFVkbG1FJ85mmxR67MqiWWudP5WUdlfJRLVa/VD0T33rXnILQ2P+DtCYfd6YbqmdhaHZbI4MEhPTjBuxEaR2IS3jMV8vNEEAKnqCXYp7kjTjIT2SgC9PlVutmZJZy454Fpzo72Aua48gYSj+OlSqTYXCYJKy+LzeUCX33+VXheHIpDv/Rg9M/PSzKTogCmhfdVTAn30+AgA67oMAEuZiFiZ0vpr90bOnaQ6z637VJx9A6nB2vuZQTdwMgLmsdI3TvEN2Cf64l56PVeErZGb0Q0Mux1mfpkUhBlEIq8uf5P2fvoCQ=
+  - secure: Hw1YoVh3xXRTLNXzMh6RdUKhdS9+z4pKWKEhknDSYN0+A/m94xFoXPJMuvuPx9kiFiWNCFGlZmzu8UAO5rRM/sklhwHBTyRMEXWGwxCeitnC4CYqYkjcvAYKjOPPM+N6a7eu1SeBcMikTChYsiHKBI+rkL3z9qPSVHmizm6dn/IaWI2hXptpc/ZGm88qparoyO2pzrGMY0qANIRGPSAUyPYUasFlJN3uUwQHbxBZ3M9Dwynqw0IB5huw6uErFsdBsAeqWZVjpBL/IAV01d7RGorhsM1RhOTDKABJfkPvHolGUKRjGpOEFEOZcuiME8o9fG989SdA86EkwPID4Aq7IHmKARn1fzdI8afM0PSgPfAU+R1Sp+ERAXbSlm2Y8e1nytPvQ5T1+B8cC6f0FSXeqrBSQr3EgkOkf120E/zYCzjmgppgsK1sOwiuAszo5yDEXPf+0xo7WBwF/L/30FDgwP3lSgwXLbxpzmbi/BPtIqOD26teuVW3c0sVXKOn+p0e9/gcaelNm46JaQFwxrI4cCLOFo9dbdRkqFOwpyoAncVr4Vs5N49ShzPesmfdVMODqnjpMiKRRchAb5B77q63P9YdldMOVzB3OEZ6bQMpxaJYdVXQwOovAK19xG/utxiTJcd4mBe8apvFGymO4f43Y1o/J88NH4uwJvapBCgSsh0=
+
+before_install:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update && sudo apt-get -y install docker-ce
+
+  - docker load -i $HOME/.docker/images/images.tar || true
+
+  - docker build -t $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT -f Dockerfile.cpu .
+
+  - docker run --rm --entrypoint /bin/bash $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT -c "python3 -m pip install flake8==3.7.8 && flake8 ."
+
+  - wget -c https://www.dropbox.com/s/6xwyu1az6oy4ts7/r2plus1d_34_clip8_ig65m_from_scratch_f79708462.pkl?dl=1 -O $HOME/.cache/r2plus1d_34_clip8_ig65m_from_scratch.pkl
+  - wget -c https://www.dropbox.com/s/p81twy88kwrrcop/r2plus1d_34_clip8_ft_kinetics_from_ig65m_%20f128022400.pkl?dl=1 -O $HOME/.cache/r2plus1d_34_clip8_ft_kinetics_from_ig65m.pkl
+  - wget -c https://www.dropbox.com/s/eimo232tqw8mwi9/r2plus1d_34_clip32_ig65m_from_scratch_f102649996.pkl?dl=1 -O $HOME/.cache/r2plus1d_34_clip32_ig65m_from_scratch.pkl
+  - wget -c https://www.dropbox.com/s/z41ff7vs0bzf6b8/r2plus1d_34_clip32_ft_kinetics_from_ig65m_%20f106169681.pkl?dl=1 -O $HOME/.cache/r2plus1d_34_clip32_ft_kinetics_from_ig65m.pkl
+
+script:
+  - docker run --rm -v $HOME/.cache:/root/.cache $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT convert /root/.cache/r2plus1d_34_clip8_ig65m_from_scratch.pkl /tmp/r2plus1d_34_clip8_ig65m_from_scratch --frames 8 --classes 487
+  - docker run --rm -v $HOME/.cache:/root/.cache $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT convert /root/.cache/r2plus1d_34_clip8_ft_kinetics_from_ig65m.pkl /tmp/r2plus1d_34_clip8_ft_kinetics_from_ig65m --frames 8 --classes 400
+  - docker run --rm -v $HOME/.cache:/root/.cache $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT convert /root/.cache/r2plus1d_34_clip32_ig65m_from_scratch.pkl /tmp/r2plus1d_34_clip32_ig65m_from_scratch --frames 32 --classes 359
+  - docker run --rm -v $HOME/.cache:/root/.cache $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT convert /root/.cache/r2plus1d_34_clip32_ft_kinetics_from_ig65m.pkl /tmp/r2plus1d_34_clip32_ft_kinetics_from_ig65m --frames 32 --classes 400
+
+  - ffmpeg -loglevel error -f lavfi -i testsrc=duration=5:size=64x64:rate=30 video-64x64.mp4
+
+  - docker run --rm -v $HOME/.cache:/root/.cache -v $PWD:/data $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT extract /data/video-64x64.mp4 /data/features.npy
+
+  - docker run --rm -v $HOME/.cache:/root/.cache -v $PWD:/data $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT semcode /data/features.npy /data/semcode.png
+
+  - docker run --rm -v $HOME/.cache:/root/.cache -v $PWD:/data $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT dreamer /data/video-64x64.mp4 /data/dream.gif --num-epochs 3
+
+  - mkdir features
+  - for i in $(seq 10000); do cp features.npy features/$i.npy; done
+  - docker run --rm -v $HOME/.cache:/root/.cache -v $PWD:/data $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT index-build /data/features/ /data/index --num-train 10000
+  - docker run --detach --rm -v $HOME/.cache:/root/.cache -v $PWD:/data --network=host $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT index-serve /data/index
+  - sleep 10 && docker run --rm -v $HOME/.cache:/root/.cache -v $PWD:/data --network=host $TRAVIS_REPO_SLUG-$TRAVIS_COMMIT index-query /data/features.npy 0
+
+before_cache:
+  - sudo chown travis:travis -R $HOME/.cache
+  - docker save -o $HOME/.docker/images/images.tar $(docker images -a -q)
+
+after_success:
+  - |
+    if [[ $TRAVIS_BRANCH == "master" ]]; then
+      make dockerfile=Dockerfile.cpu dockerimage=$TRAVIS_REPO_SLUG:latest-cpu
+      make dockerfile=Dockerfile.gpu dockerimage=$TRAVIS_REPO_SLUG:latest-gpu
+
+      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      docker push $TRAVIS_REPO_SLUG:latest-cpu
+      docker push $TRAVIS_REPO_SLUG:latest-gpu
+    fi
+  - |
+    if [[ ! -z $TRAVIS_TAG ]]; then
+      make dockerfile=Dockerfile.cpu dockerimage=$TRAVIS_REPO_SLUG:$TRAVIS_TAG-cpu
+      make dockerfile=Dockerfile.gpu dockerimage=$TRAVIS_REPO_SLUG:$TRAVIS_TAG-gpu
+
+      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      docker push $TRAVIS_REPO_SLUG:$TRAVIS_TAG-cpu
+      docker push $TRAVIS_REPO_SLUG:$TRAVIS_TAG-gpu
+    fi

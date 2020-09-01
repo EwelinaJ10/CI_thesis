@@ -1,0 +1,94 @@
+name: CI
+on: pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out, and set up the node/ruby infra
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "13.x"
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v1
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      # Get local dependencies
+      - run: sudo apt-get update
+      - run: sudo apt install calibre
+      - run: yarn install
+        env:
+          YARN_CHECKSUM_BEHAVIOR: ignore
+
+      # Verify dependencies are hooked up right
+      - run: node test/verifyPackageVersions.js
+      # Launch
+      - run: yarn bootstrap
+      - run: yarn build
+      - run: yarn compile
+
+      # PR: Deploy if we can
+      - name: Deploy PR Version
+        if: github.event_name == 'pull_request'
+        run: 'if test -z "$NOW_ACCESS_TOKEN"; then echo "Skipping deploy";
+          else cp -r packages/typescriptlang-org/public packages/typescriptlang-org/typescript-v2-$PR_NUMBER ; npx now packages/typescriptlang-org/typescript-v2-$PR_NUMBER --token="$NOW_ACCESS_TOKEN"  --confirm --prod; fi'
+        env:
+          NOW_ACCESS_TOKEN: ${{ secrets.NOW_ACCESS_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      # Run any tests
+      - run: yarn test
+        env:
+          CI: true
+
+      - name: "Validates that TypeScript plugins work"
+        run: npm init typescript-playground-plugin playground-my-plugin
+
+  lighthouse_danger:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "13.x"
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v1
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - run: yarn install
+
+      - run: yarn workspace typescriptlang-org run create-lighthouse-json
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      - name: Run Lighthouse and test budgets
+        uses: orta/lighthouse-ci-action@ort-fork-pr-29
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      # danger for PR builds
+      - if: github.event_name == 'pull_request'
+        run: 'if test -z "$GITHUB_TOKEN"; then echo "Skipping danger"; else yarn danger ci; fi'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

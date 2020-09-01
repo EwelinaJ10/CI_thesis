@@ -1,0 +1,18 @@
+language: go
+go: "1.12"
+
+script:
+  - ./build.sh
+
+deploy:
+  - provider: releases
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: dist/*
+    skip_cleanup: true
+    on:
+      tags: true
+  - provider: script
+    script: ./update_tap.sh $TAP_TOKEN
+    on:
+      tags: true

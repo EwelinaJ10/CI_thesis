@@ -1,0 +1,236 @@
+---
+name: continuous-integration
+
+# Trigger build on master, tags and pull requests
+on:
+  push:
+    branches:
+      - 'master'
+      - 'develop'
+    tags:
+      - '*'
+    paths-ignore:
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+
+# Jobs definition
+jobs:
+  core-test:
+    name: Core / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+        id: go
+
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: install
+        run: |
+          go get -u gotest.tools/gotestsum
+          make install
+
+      - name: tests
+        run: |
+          # https://github.com/actions/setup-go/issues/14
+          export PATH=${PATH}:`go env GOPATH`/bin
+          make test-coverage
+
+      - name: coverage
+        uses: codecov/codecov-action@v1.0.4
+        with:
+          token: ${{ secrets.codecov_token }}
+          yml: .github/.codecov.yml
+          flags: core
+
+  ui-test:
+    name: UI / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: install
+        working-directory: ui
+        run: yarn install
+
+      - name: tests
+        working-directory: ui
+        run: yarn run test
+
+      - name: coverage
+        uses: codecov/codecov-action@v1.0.4
+        with:
+          token: ${{ secrets.codecov_token }}
+          yml: .github/.codecov.yml
+          file: ui/tests/coverage/*
+          flags: ui
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+        id: go
+
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: ui / install
+        working-directory: ui
+        run: yarn install
+
+      - name: core / install
+        run: |
+          go get -u github.com/GeertJohan/go.rice/rice
+          make install
+
+      - name: ui / build
+        working-directory: ui
+        run: yarn run build
+
+      - name: core / build
+        run: |
+          # https://github.com/actions/setup-go/issues/14
+          export PATH=${PATH}:`go env GOPATH`/bin
+          # Set MB_ENVIRONMENT
+          if [[ $GITHUB_REF == refs/tags/* ]]; then export MB_ENVIRONMENT=production; fi
+          make build-cross
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: binaries
+          path: binaries
+
+  release:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [core-test, ui-test, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: Init
+        id: init
+        run: |
+          VERSION=$(cat VERSION)
+          echo ::set-output name=VERSION::$VERSION
+          echo ::set-output name=UPLOAD_URL::$(curl https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/$VERSION --silent | grep -Po '"upload_url"\s*:\s*"[^"]+' | cut -d'"' -f4)
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: binaries
+
+      - uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.init.outputs.UPLOAD_URL }}
+          asset_path: binaries/monitoror-linux-amd64-${{ steps.init.outputs.VERSION }}
+          asset_name: monitoror-linux-amd64-${{ steps.init.outputs.VERSION }}
+          asset_content_type: application/x-executable
+
+      - uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.init.outputs.UPLOAD_URL }}
+          asset_path: binaries/monitoror-linux-arm-${{ steps.init.outputs.VERSION }}
+          asset_name: monitoror-linux-arm-${{ steps.init.outputs.VERSION }}
+          asset_content_type: application/x-executable
+
+      - uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.init.outputs.UPLOAD_URL }}
+          asset_path: binaries/monitoror-windows-amd64-${{ steps.init.outputs.VERSION }}.exe
+          asset_name: monitoror-windows-amd64-${{ steps.init.outputs.VERSION }}.exe
+          asset_content_type: application/x-dosexec
+
+      - uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.init.outputs.UPLOAD_URL }}
+          asset_path: binaries/monitoror-macos-${{ steps.init.outputs.VERSION }}
+          asset_name: monitoror-macos-${{ steps.init.outputs.VERSION }}
+          asset_content_type: application/x-mach-binary
+
+  release-dockerhub:
+    name: Release DockerHub
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: Init
+        id: init
+        run: |
+          VERSION=$(cat VERSION)
+          echo ::set-output name=VERSION::$VERSION
+          echo ::set-output name=MINOR_VERSION::$(echo $VERSION | cut -d "." -f 1,2)
+          echo ::set-output name=MAJOR_VERSION::$(echo $VERSION | cut -d "." -f 1)
+
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: binaries
+
+      - uses: actions-hub/docker/login@master
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Images
+        run: |
+          # Set MB_ENVIRONMENT
+          if [[ $GITHUB_REF == refs/tags/* ]]; then export MB_ENVIRONMENT=production; fi
+          make package-docker
+          docker tag ${GITHUB_REPOSITORY}:${{ steps.init.outputs.VERSION }} ${GITHUB_REPOSITORY}:${{ steps.init.outputs.MINOR_VERSION }}
+          docker tag ${GITHUB_REPOSITORY}:${{ steps.init.outputs.VERSION }} ${GITHUB_REPOSITORY}:${{ steps.init.outputs.MAJOR_VERSION }}
+          docker tag ${GITHUB_REPOSITORY}:${{ steps.init.outputs.VERSION }} ${GITHUB_REPOSITORY}:latest
+
+      - name: Push to docker hub [X.Y.Z]
+        uses: actions-hub/docker@master
+        with:
+          args: push ${GITHUB_REPOSITORY}:${{ steps.init.outputs.VERSION }}
+
+      - name: Push to docker hub [X.Y]
+        uses: actions-hub/docker@master
+        with:
+          args: push ${GITHUB_REPOSITORY}:${{ steps.init.outputs.MINOR_VERSION }}
+
+      - name: Push to docker hub [X]
+        uses: actions-hub/docker@master
+        with:
+          args: push ${GITHUB_REPOSITORY}:${{ steps.init.outputs.MAJOR_VERSION }}
+
+      - name: Push to docker hub [latest]
+        uses: actions-hub/docker@master
+        with:
+          args: push ${GITHUB_REPOSITORY}:latest
+
+

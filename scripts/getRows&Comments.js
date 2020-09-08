@@ -7,7 +7,7 @@ const directory = '/yamls/github_yamls/';
 
 const number_of_rows = fs.createWriteStream('number_of_rows__and_comments_per_file.txt');
 //const use_of_actions = fs.createWriteStream('number_of_rows.txt');
-var rows_of_comments = []
+
 const defaultOptions = {
    
     maxAliasCount: -1,
@@ -37,9 +37,6 @@ fs.readdir(directoryPath, function (err, files) {
                    comments ++;
                }
            });
-
-           
-           //console.log(split_lines.length-1);
            number_of_rows.write((`${file_name}, ${split_lines.length-1}, ${comments} \n`))
        
            

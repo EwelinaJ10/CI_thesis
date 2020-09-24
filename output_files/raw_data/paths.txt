@@ -18,15 +18,15 @@
 1055_benches.yml, 0  
 1056_tests.yml, 0  
 1057_release.yml, 0  
-1058_test-harness.yml, 2 , 83, 99 
+1058_test-harness.yml, 2 ,           bash -o pipefail -xc "cd /vector-test-harness \,           bash -o pipefail -xc "cd /vector-test-harness \ 
 1059_labels.yml, 0  
 105_tests.yml, 0  
 105_tweet_issues.yml, 0  
 1060_environment.yml, 0  
 1061_install-sh.yml, 0  
 1062_lints.yml, 0  
-1063_nightly.yml, 4 , 121, 132, 137, 138 
-1064_main.yml, 2 , 23, 26 
+1063_nightly.yml, 4 ,           msiexec /quiet /i perl-installer.msi,           msiexec /quiet /i cmake-installer.msi,           mkdir -p /c/wix,           cd /c/wix 
+1064_main.yml, 2 ,           sudo curl -o /usr/local/lib/antlr-${ANTLR_VERSION}-complete.jar https://www.antlr.org/download/antlr-${ANTLR_VERSION}-complete.jar,           echo -e '#!/bin/bash\njava -jar /usr/local/lib/antlr-4.8-complete.jar "$@"' > $HOME/antlr-bin/antlr 
 1066_tests.yml, 0  
 1067_stale.yml, 0  
 1068_ci-test.yml, 0  
@@ -45,43 +45,43 @@
 1079_test.yml, 0  
 107_main.yml, 0  
 1080_swift.yml, 0  
-1081_development.yml, 2 , 95, 97 
-1082_release.yml, 4 , 189, 191, 207, 209 
+1081_development.yml, 2 ,           xcopy .\templates .\output\templates\ /E,           xcopy .\static .\output\static\ /E 
+1082_release.yml, 4 ,           xcopy .\templates .\output\templates\ /E,           xcopy .\static .\output\static\ /E,           xcopy .\templates .\win-portable\templates\ /E,           xcopy .\static .\win-portable\static\ /E 
 1083_create-release.yml, 0  
 1083_haskell.yml, 0  
 1084_rust-ci.yml, 0  
 1085_publish-binaries.yml, 0  
 1087_nodejs.yml, 0  
-108_unittests.yml, 1 , 13 
+108_unittests.yml, 1 ,       run: sudo xcode-select --switch /Applications/Xcode_11.4.app/Contents/Developer 
 1090_ci.yml, 0  
 1096_bump-brew-formula.yml, 0  
 1097_clippy.yml, 0  
 1098_miri.yml, 0  
-1099_ci.yml, 1 , 11 
+1099_ci.yml, 1 ,       run: docker run -v $(pwd):/opt silex/emacs:master-dev  bash -c "cd /opt && make ci" 
 1099_sanitizers.yml, 0  
 109_coveralls.yml, 0  
-10_ci.yml, 4 , 54, 57, 59, 62 
+10_ci.yml, 4 ,           curl https://packages.microsoft.com/config/ubuntu/16.04/mssql-server-2017.list | sudo tee /etc/apt/sources.list.d/mssql-server-2017.list,           sudo MSSQL_SA_PASSWORD=Password! MSSQL_PID=developer /opt/mssql/bin/mssql-conf -n setup accept-eula,           curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list,           sudo /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Password! -Q "create database [test]" 
 10_code-quality.yml, 0  
-10_releases.yml, 6 , 58, 59, 61, 62, 63, 65 
+10_releases.yml, 6 ,           mkdir -p /tmp/bin,           cc -O2 -o /tmp/bin/minisign -D_GNU_SOURCE *.c -lsodium,           /tmp/bin/minisign -v,           echo '#' > /tmp/minisign.key,           echo "${{ secrets.MINISIGN_SK }}" >> /tmp/minisign.key,           echo | /tmp/bin/minisign -s /tmp/minisign.key -Sm *.tar.gz *.zip 
 1100_ci.yml, 0  
 1103_pull_request.yml, 0  
 1104_chart-release.yml, 0  
 1104_ci.yml, 0  
-1105_release.yml, 1 , 165 
+1105_release.yml, 1 ,           /target/arm-unknown-linux-gnueabihf/release/tre 
 1106_release.yml, 0  
 1107_build.yml, 0  
-1107_build_test_schedviz.yml, 1 , 23 
+1107_build_test_schedviz.yml, 1 ,       run: yarn bazel test //... 
 1108_gradlepublish.yml, 0  
 1109_android.yml, 0  
 110_main.yml, 0  
 1110_ci.yml, 0  
 1111_ci.yml, 0  
-1111_NUGET-PUSH.yml, 11 , 37, 38, 39, 43, 44, 45, 48, 49, 50, 51, 53 
-1112_DEV-GPR-PUSH.yml, 3 , 47, 48, 49 
+1111_NUGET-PUSH.yml, 11 ,           dotnet build src/bunit.core/ -c Release --no-restore -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet build src/bunit.web/ -c Release --no-restore -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet build src/bunit.xunit/ -c Release --no-restore -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet test src/bunit.core.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.web.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.xunit.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet pack src/bunit.core/ -c Release -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet pack src/bunit.web/ -c Release -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet pack src/bunit.xunit/ -c Release -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet pack src/bunit/ -c Release -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,         run: dotnet pack src/bunit.template/ -c Release -o ${GITHUB_WORKSPACE}/packages /p:PublicRelease=true 
+1112_DEV-GPR-PUSH.yml, 3 ,           dotnet test src/bunit.core.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.web.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.xunit.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591 
 1113_CI-CD-Docs.yml, 0  
-1114_CI.yml, 3 , 46, 47, 48 
-1115_CI-PR.yml, 3 , 46, 47, 48 
-1116_RELEASE.yml, 11 , 37, 38, 39, 43, 44, 45, 48, 49, 50, 51, 53 
+1114_CI.yml, 3 ,           dotnet test src/bunit.core.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.web.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.xunit.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591 
+1115_CI-PR.yml, 3 ,           dotnet test src/bunit.core.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.web.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.xunit.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591 
+1116_RELEASE.yml, 11 ,           dotnet build src/bunit.core/ -c Release --no-restore -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet build src/bunit.web/ -c Release --no-restore -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet build src/bunit.xunit/ -c Release --no-restore -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet test src/bunit.core.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.web.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet test src/bunit.xunit.tests/ -c Release --no-restore --verbosity normal /nowarn:CS1591,           dotnet pack src/bunit.core/ -c Release -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet pack src/bunit.web/ -c Release -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet pack src/bunit.xunit/ -c Release -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,           dotnet pack src/bunit/ -c Release -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH -p:ContinuousIntegrationBuild=true -p:DeterministicSourcePaths=true /p:PublicRelease=true,         run: dotnet pack src/bunit.template/ -c Release -o ${GITHUB_WORKSPACE}/packages /p:PublicRelease=true 
 1116_tests.yml, 0  
 1117_codeql.yml, 0  
 1117_main.yml, 0  
@@ -100,20 +100,20 @@
 1125_ci.yml, 0  
 1125_ts-ci.yml, 0  
 1126_dart.yml, 0  
-1126_linux-ci.yml, 4 , 28, 29, 40, 41 
+1126_linux-ci.yml, 4 ,         CC: /usr/bin/clang,         CXX: /usr/bin/clang++,         CC: /usr/bin/clang,         CXX: /usr/bin/clang++ 
 1127_BuildAndPublish.yml, 0  
 1128_test.yml, 0  
 1128_TestUnit.yml, 0  
 1129_release.yml, 0  
 112_ci.yml, 0  
 112_commitlint.yml, 0  
-1130_main.yml, 1 , 41 
+1130_main.yml, 1 ,       SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk 
 1130_OpenXR-SDK-readonly.yml, 0  
 1131_update-tic.yml, 0  
 1133_ci.yml, 0  
 1133_main.yml, 0  
 1134_deploy.yml, 0  
-1136_ci.yml, 1 , 21 
+1136_ci.yml, 1 ,           while ! docker exec codelytv-php_ddd_skeleton-mooc-mysql mysqladmin --user=root --password= --host "127.0.0.1" ping --silent &> /dev/null ; do 
 1140_nodejs.yml, 0  
 1142_ci.yml, 0  
 1146_ci.yml, 0  
@@ -138,7 +138,7 @@
 1169_ci.yml, 0  
 1171_deploy-website.yml, 0  
 1172_node.yml, 0  
-1173_ci.yml, 7 , 31, 32, 33, 34, 35, 36, 37 
+1173_ci.yml, 7 ,         sudo wget -O /usr/bin/solc-0.4.25 https://github.com/ethereum/solidity/releases/download/v0.4.25/solc-static-linux,         sudo chmod +x /usr/bin/solc-0.4.25,         sudo wget -O /usr/bin/solc-0.5.1 https://github.com/ethereum/solidity/releases/download/v0.5.1/solc-static-linux,         sudo chmod +x /usr/bin/solc-0.5.1,         sudo wget -O /usr/bin/solc-0.5.0 https://github.com/ethereum/solidity/releases/download/v0.5.0/solc-static-linux,         sudo chmod +x /usr/bin/solc-0.5.0,         sudo cp /usr/bin/solc-0.5.1 /usr/bin/solc 
 1174_flutter.yml, 0  
 1177_lint.yml, 0  
 1177_python-package.yml, 0  
@@ -165,32 +165,32 @@
 1197_pages.yml, 0  
 1197_test-cluster-set-up.yml, 0  
 1198_android.yml, 0  
-1198_check-plugin.yml, 2 , 26, 27 
+1198_check-plugin.yml, 2 ,           echo ::set-env name=CHIME_MESSAGE::$(cat /tmp/chime_message.md),           exit `cat /tmp/plugin_status.check` 
 1199_main.yml, 0  
-1199_release-sync-deb.yml, 1 , 26 
-1199_slack-pre.yml, 1 , 49 
+1199_release-sync-deb.yml, 1 ,           echo "deb http://repo.aptly.info/ squeeze main" | sudo tee -a /etc/apt/sources.list.d/aptly.list 
+1199_slack-pre.yml, 1 ,                 "author_name": "8398a7@action-slack", // json 
 119_publish-doc.yml, 0  
-11_test.yml, 3 , 54, 55, 56 
+11_test.yml, 3 ,         ./dist/chezmoi-cgo_linux_amd64/chezmoi --version | tee /dev/stderr | grep -q "chezmoi version v",         ./dist/chezmoi-cgo_linux_amd64/chezmoi --version | tee /dev/stderr | grep -q "chezmoi version v",         ./dist/chezmoi-nocgo_linux_386/chezmoi --version | tee /dev/stderr | grep -q "chezmoi version v" 
 1200_release-sync-windows.yml, 0  
 1200_uncommitted.yml, 0  
 1201_release-sync-tar.yml, 0  
 1201_release.yml, 0  
-1202_slack-mainline.yml, 1 , 56 
+1202_slack-mainline.yml, 1 ,                 "author_name": "8398a7@action-slack", // json 
 1202_test-build-ami.yml, 0  
-1203_test-build-windows.yml, 1 , 353 
+1203_test-build-windows.yml, 1 ,           findstr /V "node.max_local_storage_nodes" .\$PACKAGE-$OD_VERSION\config\elasticsearch.yml > .\$PACKAGE-$OD_VERSION\config\elasticsearch.yml.new 
 1203_test.yml, 0  
-1204_test-build-deb.yml, 65 , 23, 92, 216, 223, 224, 225, 226, 227, 228, 229, 230, 231, 233, 277, 285, 286, 287, 288, 289, 290, 291, 293, 337, 345, 346, 347, 348, 349, 350, 352, 395, 403, 404, 405, 448, 456, 457, 458, 459, 460, 461, 463, 506, 514, 515, 516, 556, 564, 565, 566, 567, 568, 569, 571, 646, 652, 653, 654, 655, 656, 657, 658, 663, 664, 665 
-1205_check-version-upgrade.yml, 5 , 47, 65, 95, 111, 112 
+1204_test-build-deb.yml, 65 ,         run: .github/scripts/check_plugin.sh "deb,kibana"; exit `cat /tmp/plugin_status.check`,           echo "deb http://repo.aptly.info/ squeeze main" | sudo tee -a /etc/apt/sources.list.d/aptly.list,           echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,           sudo mkdir /home/runner/work/repo,           sudo chmod 777 /home/runner/work/repo,           sudo chmod 777 /etc/elasticsearch/elasticsearch.yml,           sudo /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security,           sudo sed -i '/path.logs/a path.repo: ["/home/runner/work/repo"]' /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^opendistro_security/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /CN=kirk/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^node.max_local_storage_nodes/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^cluster.routing.allocation.disk.threshold_enabled/d /etc/elasticsearch/elasticsearch.yml,           sudo /etc/init.d/elasticsearch start,           echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,           sudo chmod 777 /etc/elasticsearch/elasticsearch.yml,           sudo /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security,           sudo sed -i /^opendistro_security/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /CN=kirk/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i '/http\.port/s/^# *//' /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^node.max_local_storage_nodes/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^cluster.routing.allocation.disk.threshold_enabled/d /etc/elasticsearch/elasticsearch.yml,           sudo /etc/init.d/elasticsearch start,           echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,           sudo chmod 777 /etc/elasticsearch/elasticsearch.yml,           sudo /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security,           sudo sed -i /^opendistro_security/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /CN=kirk/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^node.max_local_storage_nodes/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^cluster.routing.allocation.disk.threshold_enabled/d /etc/elasticsearch/elasticsearch.yml,           sudo /etc/init.d/elasticsearch start,           echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,           sudo chmod 777 /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^node.max_local_storage_nodes/d /etc/elasticsearch/elasticsearch.yml,           sudo /etc/init.d/elasticsearch start,           echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,           sudo chmod 777 /etc/elasticsearch/elasticsearch.yml,           sudo /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security,           sudo sed -i /^opendistro_security/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /CN=kirk/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^node.max_local_storage_nodes/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^cluster.routing.allocation.disk.threshold_enabled/d /etc/elasticsearch/elasticsearch.yml,           sudo /etc/init.d/elasticsearch start,           echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,           sudo chmod 777 /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^node.max_local_storage_nodes/d /etc/elasticsearch/elasticsearch.yml,           sudo /etc/init.d/elasticsearch start,           echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,           sudo chmod 777 /etc/elasticsearch/elasticsearch.yml,           sudo /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security,           sudo sed -i /^opendistro_security/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /CN=kirk/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^node.max_local_storage_nodes/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^cluster.routing.allocation.disk.threshold_enabled/d /etc/elasticsearch/elasticsearch.yml,           sudo /etc/init.d/elasticsearch start,           echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,           sudo chmod 777 /etc/elasticsearch/elasticsearch.yml,           sudo /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security,           sudo sed -i /^opendistro_security/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /CN=kirk/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^node.max_local_storage_nodes/d /etc/elasticsearch/elasticsearch.yml,           sudo sed -i /^cluster.routing.allocation.disk.threshold_enabled/d /etc/elasticsearch/elasticsearch.yml,           sudo /etc/init.d/elasticsearch start,           sudo /usr/share/kibana/bin/kibana-plugin remove opendistro_security --allow-root,           sudo sed -i /^opendistro_security/d /etc/kibana/kibana.yml,           sudo sed -i 's/https/http/' /etc/kibana/kibana.yml 
+1205_check-version-upgrade.yml, 5 ,             echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/apt stable main" | sudo tee -a   /etc/apt/sources.list.d/opendistroforelasticsearch.list,             echo "deb https://d3g5vo6xdbdb9a.cloudfront.net/staging/apt stable main" | sudo tee -a /etc/apt/sources.list.d/opendistroforelasticsearch.list,             sudo curl https://d3g5vo6xdbdb9a.cloudfront.net/yum/opendistroforelasticsearch-artifacts.repo -o /etc/yum.repos.d/opendistroforelasticsearch-artifacts.repo,             sudo rm -rf /etc/yum.repos.d/opendistroforelasticsearch-artifacts.repo,             sudo curl https://d3g5vo6xdbdb9a.cloudfront.net/yum/staging-opendistroforelasticsearch-artifacts.repo  -o /etc/yum.repos.d/staging-opendistroforelasticsearch-artifacts.repo 
 1206_test-cluster-delete.yml, 0  
-1207_release-sync-ami.yml, 1 , 49 
-1208_test-build-docker-ci.yml, 1 , 76 
+1207_release-sync-ami.yml, 1 ,           echo "AMI has been published / set to public on all regions" 
+1208_test-build-docker-ci.yml, 1 ,            echo "RUN /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security" >> Dockerfile 
 1208_tests.yml, 0  
 1209_build.yml, 0  
-1209_test-build-docker.yml, 12 , 158, 159, 160, 266, 267, 276, 413, 414, 415, 424, 425, 426 
-1210_test-build-tar.yml, 9 , 23, 96, 142, 187, 232, 275, 319, 440, 455 
-1211_release-sync-rpm.yml, 11 , 34, 35, 40, 46, 47, 48, 49, 58, 60, 77, 78 
-1212_deploy.yml, 3 , 16, 53, 65 
-1213_main.yml, 2 , 14, 17 
+1209_test-build-docker.yml, 12 ,         echo "RUN /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security" >> Dockerfile,         echo "RUN echo ''  >> /usr/share/elasticsearch/config/elasticsearch.yml" >> Dockerfile,         echo "RUN echo \"path.repo: [\\\"/usr/share/elasticsearch\\\"]\" >> /usr/share/elasticsearch/config/elasticsearch.yml" >> Dockerfile,         echo "RUN echo ''  >> /usr/share/elasticsearch/config/elasticsearch.yml" >> Dockerfile,         echo "RUN echo \"path.repo: [\\\"/usr/share/elasticsearch\\\"]\" >> /usr/share/elasticsearch/config/elasticsearch.yml" >> Dockerfile,         docker exec -t $DOCKER_NAME /bin/bash -c "sed -i /^node.max_local_storage_nodes/d /usr/share/elasticsearch/config/elasticsearch.yml",           echo "RUN /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security" >> Dockerfile,           echo "RUN echo ''  >> /usr/share/elasticsearch/config/elasticsearch.yml" >> Dockerfile,           echo "RUN echo \"path.repo: [\\\"/usr/share/elasticsearch\\\"]\" >> /usr/share/elasticsearch/config/elasticsearch.yml" >> Dockerfile,           echo "RUN /usr/share/kibana/bin/kibana-plugin remove opendistro_security" >> Dockerfile,           echo "RUN sed -i /^opendistro_security/d /usr/share/kibana/config/kibana.yml" >> Dockerfile,           echo "RUN sed -i 's/https/http/' /usr/share/kibana/config/kibana.yml" >> Dockerfile 
+1210_test-build-tar.yml, 9 ,         run: .github/scripts/check_plugin.sh "zip,kibana"; exit `cat /tmp/plugin_status.check`,           sed -i /install_demo_configuration/d opendistro-tar-install.sh,           sed -i /install_demo_configuration/d opendistro-tar-install.sh,           sed -i /install_demo_configuration/d opendistro-tar-install.sh,           sed -i /^node.max_local_storage_nodes/d ./config/elasticsearch.yml,           sed -i /install_demo_configuration/d opendistro-tar-install.sh,           sed -i /install_demo_configuration/d opendistro-tar-install.sh,           sed -i /install_demo_configuration/d opendistro-tar-install.sh,           sed -i /^opendistro_security/d ./config/kibana.yml 
+1211_release-sync-rpm.yml, 11 ,           /github/home/bin/aws s3 cp s3://opendistro-docs/github-actions/pgp-private-key .,           /github/home/bin/aws s3 cp s3://opendistro-docs/github-actions/pgp-public-key .,           ls -ltr /github/home/.gnupg/,           echo "%_signature gpg" >> /github/home/.rpmmacros,           echo "%_gpg_path /github/home/.gnupg" >> /github/home/.rpmmacros,           echo "%_gpg_name OpenDistroForElasticsearch" >> /github/home/.rpmmacros,           echo "%_gpg /usr/bin/gpg" >> /github/home/.rpmmacros,           /github/home/bin/aws s3 sync s3://artifacts.opendistroforelasticsearch.amazon.com/yum/ yum/,           /github/home/bin/aws s3 sync s3://artifacts.opendistroforelasticsearch.amazon.com/downloads/rpms/ downloads/rpms/,           /github/home/bin/aws s3 sync yum/ s3://artifacts.opendistroforelasticsearch.amazon.com/yum,           /github/home/bin/aws cloudfront create-invalidation --distribution-id E1VG5HMIWI4SA2 --paths "/yum/*" 
+1212_deploy.yml, 3 ,       run: sudo xcode-select --switch /Applications/Xcode_11.4.app/Contents/Developer,       run: sudo xcode-select --switch /Applications/Xcode_11.4.app/Contents/Developer,       run: sudo xcode-select --switch /Applications/Xcode_11.4.app/Contents/Developer 
+1213_main.yml, 2 ,         mv swiftlint /usr/local/bin,       run: sudo xcode-select --switch /Applications/Xcode_11.4.app/Contents/Developer 
 1213_maven.yml, 0  
 1213_nodejs.yml, 0  
 1214_nodejs.yml, 0  
@@ -209,7 +209,7 @@
 1228_pythonpublish.yml, 0  
 1229_rebase.yml, 0  
 122_greetings.yml, 0  
-122_main.yml, 1 , 230 
+122_main.yml, 1 ,           npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN 
 1230_ci_testing_mac.yml, 0  
 1231_node-windows.yml, 0  
 1232_maven.yml, 0  
@@ -241,16 +241,16 @@
 1244_homeassistant.yml, 0  
 1244_main.yml, 0  
 1244_pull_request.yml, 0  
-1245_cron.yml, 2 , 23, 26 
+1245_cron.yml, 2 ,           python3 -m pip install -r /home/runner/work/integration/integration/requirements.txt,         run: python3 /home/runner/work/integration/integration/manage/generate_releasenotes.py --token ${{ secrets.GITHUB_TOKEN }} --release no 
 1246_build.yml, 0  
 1246_test.yml, 0  
 1246_validate.yml, 0  
-1247_release.yml, 10 , 28, 35, 36, 40, 41, 42, 47, 54, 74, 77 
+1247_release.yml, 10 ,               --unzip_to  /tmp/lokalise \,           mkdir -p /home/runner/work/integration/integration/custom_components/hacs/translations/,           cp /tmp/lokalise/locale/* /home/runner/work/integration/integration/custom_components/hacs/translations/,           sed -i '/VERSION = /c\VERSION = "${{ github.ref }}"' /home/runner/work/integration/integration/custom_components/hacs/const.py,           sed -i 's|refs/heads/||' /home/runner/work/integration/integration/custom_components/hacs/const.py,           sed -i 's|refs/tags/||' /home/runner/work/integration/integration/custom_components/hacs/const.py,           cd /home/runner/work/integration/integration/custom_components/hacs,           file: /home/runner/work/integration/integration/custom_components/hacs/hacs.zip,           python3 -m pip install -r /home/runner/work/integration/integration/requirements.txt,         run: python3 /home/runner/work/integration/integration/manage/generate_releasenotes.py --token ${{ secrets.GITHUB_TOKEN }} --release yes --tag ${{ github.ref }} 
 1248_build-windows.yml, 0  
 1249_firebase.yml, 0  
 1249_integrationtests.yml, 0  
 124_build-packages.yml, 0  
-1250_cd.yml, 1 , 14 
+1250_cd.yml, 1 ,     name: Google Cloud / Test, Build, and Deploy 
 1250_unittests.yml, 0  
 1251_ci.yml, 0  
 1251_productiontests.yml, 0  
@@ -267,18 +267,18 @@
 125_nodejs.yml, 0  
 1260_maven.yml, 0  
 1263_build.yml, 0  
-1264_greetings.yml, 2 , 12, 13 
+1264_greetings.yml, 2 ,         issue-message: 'Hi :wave:, <br /> We welcome all kinds of contributions, please feel free to contribute and/or ask questions. <br /> Someone will attend to your issue soon ☺️',         pr-message: 'Hi :wave:, <br /> We welcome all kinds of contributions, please feel free to contribute and/or ask questions. <br /> Someone will attend to your PR soon ☺️' 
 1265_lint.yml, 0  
 1266_release.yml, 0  
 1266_tests.yml, 0  
-1267_main.yml, 1 , 7 
+1267_main.yml, 1 ,     name: ${{ matrix.os }} / node@${{ matrix.node }} 
 1267_test.yml, 0  
 1268_e2e.yml, 0  
 1269_checkin.yml, 0  
 1269_ci.yml, 0  
 126_CompatHelper.yml, 0  
 126_docs.yml, 0  
-1270_ci.yml, 3 , 12, 53, 85 
+1270_ci.yml, 3 ,   #  name: cabal / ghc-${{ matrix.ghc }} / ${{ matrix.os }},     name: stack / ubuntu-latest,     name: nix / ubuntu-latest 
 1271_android.yml, 0  
 1272_publish.yml, 0  
 1273_deploy.yml, 0  
@@ -287,7 +287,7 @@
 1276_crystal.yml, 0  
 1276_node-deploy.yml, 0  
 1279_build.yml, 0  
-1279_ci.yml, 4 , 28, 67, 114, 212 
+1279_ci.yml, 4 ,         echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list,         echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list,         echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list,           echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list 
 127_format_pr.yml, 0  
 127_lint.yml, 0  
 1280_deploy.yml, 0  
@@ -319,7 +319,7 @@
 1320_npmpublish.yml, 0  
 1322_build.yml, 0  
 1322_ubuntu18.yml, 0  
-1324_fuzzers.yml, 1 , 40 
+1324_fuzzers.yml, 1 ,         ls /usr/bin/clang* 
 1325_vs16-ci.yml, 0  
 1326_ubuntu20.yml, 0  
 1327_mingw-ci.yml, 0  
@@ -329,7 +329,7 @@
 1329_mingw64-ci.yml, 0  
 132_SwiftPlot_Ubuntu.yml, 0  
 1330_vs16-clang-ci.yml, 0  
-1331_build.yml, 5 , 17, 21, 28, 32, 33 
+1331_build.yml, 5 ,         sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list',         echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc,         source /opt/ros/melodic/setup.bash,         sudo mv g2o_2016_installed/include/g2o /usr/local/include/g2o,         sudo mv g2o_2016_installed/lib/*.so /usr/local/lib/ 
 1331_vs16-ninja-ci.yml, 0  
 1333_laravel.yml, 0  
 1334_ci.yml, 0  
@@ -339,7 +339,7 @@
 1337_issues.yml, 0  
 1337_release.yml, 0  
 133_continuous-integration-pip.yml, 0  
-133_swift.yml, 1 , 26 
+133_swift.yml, 1 ,         path: /private/var/tmp/swiftplot/ 
 1340_macos.yml, 0  
 1340_nodejs.yml, 0  
 1341_codeql.yml, 0  
@@ -352,7 +352,7 @@
 1345_codecov.yml, 0  
 1346_greetings.yml, 0  
 1347_docs.yml, 0  
-1347_reviewdog.yml, 3 , 9, 17, 25 
+1347_reviewdog.yml, 3 ,     name: runner / golangci-lint,       name: runner / misspell,       name: runner / shellcheck 
 1348_docker.yml, 0  
 1348_format.yml, 0  
 1348_lint.yml, 0  
@@ -364,7 +364,7 @@
 1355_nodejs.yml, 0  
 135_continuous-integration-conda.yml, 0  
 1360_cicd.yml, 0  
-1360_deploy-docs.yml, 1 , 20 
+1360_deploy-docs.yml, 1 ,     - name: Set /site ownership to current user 
 1362_main.yml, 0  
 1363_testing-integration.yml, 0  
 1364_github-pages.yml, 0  
@@ -375,18 +375,18 @@
 1366_github-actions-language-service.yml, 0  
 1367_github-actions-vscode-extension.yml, 0  
 1367_pythonpublish.yml, 0  
-1368_hashfile.yml, 2 , 12, 14 
+1368_hashfile.yml, 2 ,       - run: echo ::set-env name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3),       - run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}') 
 1368_python2.yml, 0  
-1369_cpack-deb-debian.yml, 1 , 41 
+1369_cpack-deb-debian.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
 1369_python3.yml, 0  
-1370_cpack-deb-ubuntu.yml, 1 , 44 
+1370_cpack-deb-ubuntu.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
 1371_macos.yml, 0  
 1372_main.yml, 0  
-1372_windows.yml, 1 , 40 
-1373_sourcefile.yml, 1 , 34 
+1372_windows.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
+1373_sourcefile.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
 1376_branch.yml, 0  
 1376_wiki.yml, 0  
-1377_linting.yml, 1 , 39 
+1377_linting.yml, 1 ,           sudo mv nextflow /usr/local/bin/ 
 1377_main.yml, 0  
 1378_ci.yml, 0  
 1379_python-package.yml, 0  
@@ -395,13 +395,13 @@
 1381_ci.yml, 0  
 1383_php.yml, 0  
 1386_chatops.yml, 0  
-1389_main.yml, 1 , 22 
+1389_main.yml, 1 ,         msbuild de4dot.sln /p:Configuration=Release /m /verbosity:normal /p:WarningLevel=0 
 1393_slack.yml, 0  
 1396_security_audit.yml, 0  
 1397_rust.yml, 0  
 139_ci.yml, 0  
 13_ci.yml, 0  
-1405_workflow.yml, 2 , 16, 134 
+1405_workflow.yml, 2 ,   _TMP_DOCKER_CONTEXT_PATH: /tmp/_docker_context_,       KUBECONFIG: /tmp/kubeconfig 
 140_cpp_ci.yml, 0  
 1410_ci.yml, 0  
 1411_update_zhc.yml, 0  
@@ -409,7 +409,7 @@
 1413_update_deps.yml, 0  
 1417_codecov.yml, 0  
 1418_rust.yml, 0  
-1431_main.yml, 1 , 45 
+1431_main.yml, 1 ,         [ ! -d qemu-4.2.0 ] && wget https://download.qemu.org/qemu-4.2.0.tar.xz && tar xJf qemu-4.2.0.tar.xz > /dev/null 
 1432_push.yml, 0  
 1437_build.yml, 0  
 1437_ci.yml, 0  
@@ -423,7 +423,7 @@
 1450_tidy.yml, 0  
 1451_coverage.yml, 0  
 1452_format.yml, 0  
-1453_ci.yml, 1 , 77 
+1453_ci.yml, 1 ,             sudo xcode-select -switch /Applications/Xcode_${{ matrix.version }}.app 
 1454_headers.yml, 0  
 1456_graphicsfuzz.yml, 0  
 1457_gfauto.yml, 0  
@@ -437,7 +437,7 @@
 1466_ci-workflow.yml, 0  
 1468_secrets-check.yml, 0  
 1469_ci.yml, 0  
-146_main.yml, 1 , 21 
+146_main.yml, 1 ,       # Don't remove the trailing /. It is necessary to follow the symlink. 
 1475_build.yml, 0  
 1476_docker.yml, 0  
 1477_lint.yml, 0  
@@ -467,11 +467,11 @@
 1499_publish.yml, 0  
 149_ci.yml, 0  
 14_build.yml, 0  
-14_rust.yml, 2 , 39, 40 
+14_rust.yml, 2 ,           sudo cp /usr/x86_64-w64-mingw32/lib/dllcrt2.o  ~/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/dllcrt2.o,           sudo cp /usr/x86_64-w64-mingw32/lib/crt2.o  ~/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/crt2.o 
 1500_build_Docker_image_manual.yml, 0  
 1500_test.yml, 0  
 1501_build_Editor.yml, 0  
-1501_update.yml, 3 , 25, 29, 30 
+1501_update.yml, 3 ,           if [[ $(du -m /tmp/.policy_sentry/iam-definition.json | cut -f1) -lt 3 ]]; then,           cp -f /tmp/.policy_sentry/iam-definition.json $(pwd)/policy_sentry/shared/data/iam-definition.json,           cp -rf /tmp/.policy_sentry/data/docs $(pwd)/policy_sentry/shared/data/ 
 1502_refresh_Editor_ATTCK_data.yml, 0  
 1502_stale.yml, 0  
 1503_ci.yml, 0  
@@ -487,41 +487,41 @@
 1512_tests.yml, 0  
 1513_style.yml, 0  
 1515_nodejs.yml, 0  
-1517_swift.yml, 1 , 13 
-151_main.yml, 5 , 47, 82, 93, 124, 135 
-151_test.yml, 2 , 13, 49 
+1517_swift.yml, 1 ,       run: sudo xcode-select -s /Applications/Xcode_11.5.app 
+151_main.yml, 5 ,             /home/runner/.cache/Cypress,             /home/runner/.cache/Cypress,         run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p,             /home/runner/.cache/Cypress,         run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p 
+151_test.yml, 2 ,           sudo rm -f /swapfile,           sudo rm -f /swapfile 
 1526_node.yml, 0  
 1529_test.yml, 0  
-152_spec-test.yml, 1 , 15 
+152_spec-test.yml, 1 ,         sudo rm -f /swapfile 
 152_tests.yml, 0  
-1531_codeql-analysis.yml, 1 , 55 
+1531_codeql-analysis.yml, 1 ,         "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" .\VSIX\RapidXamlToolkit.PRBuild.sln /p:configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m 
 1532_greetings.yml, 0  
-1533_intellicode.yml, 1 , 24 
+1533_intellicode.yml, 1 ,       run: msbuild VSIX/RapidXamlToolkit.PRBuild.sln /p:Configuration=Debug 
 1534_doc-link-checks.yml, 0  
 1536_go.yml, 0  
 1536_pull-request.yml, 0  
-1537_airtable.yml, 1 , 21 
+1537_airtable.yml, 1 ,         sudo chown -R $USER /usr/share/miniconda 
 1537_release.yml, 0  
 1538_build.yml, 0  
 1538_ci.yml, 0  
 1539_pythonpackage.yml, 0  
 1539_versioning.yml, 0  
-153_docs.yml, 1 , 14 
+153_docs.yml, 1 ,           sudo rm -f /swapfile 
 1540_ci.yml, 0  
 1540_contracts.yml, 0  
 1541_build.yml, 0  
-1541_crates.yml, 1 , 24 
+1541_crates.yml, 1 ,         run: echo "<meta http-equiv=\"refresh\" content=\"0; URL='./plasm_cli/index.html'\" />" > ./target/doc/index.html 
 1542_build_pr.yml, 0  
 1542_dockerpush.yml, 0  
 1543_integration.yml, 0  
 1544_fmt.yml, 0  
 1544_python.yml, 0  
 1546_master.yml, 0  
-1548_ccpp.yml, 2 , 33, 58 
+1548_ccpp.yml, 2 ,         docker run --rm -i -v $(pwd)/../builds:/builds -v $(pwd):/sources cyd01/cross-gcc "cd ${VERSION}_My_PuTTY/windows ; make -f MAKEFILE.MINGW cross ; cd /builds ; ls -l",         docker run --rm -i -v $(pwd)/../builds:/builds -v $(pwd):/sources cyd01/cross-gcc "cd ${VERSION}_My_PuTTY/windows ; make -f MAKEFILE.MINGW cross64 ; cd /builds ; ls -l" 
 1549_nodejs.yml, 0  
 1549_stale_issues.yml, 0  
 154_label.yml, 0  
-154_test.yml, 1 , 11 
+154_test.yml, 1 ,       run: sudo xcrun xcode-select -s /Applications/Xcode_11.4.app 
 1550_ci.yml, 0  
 1551_ci.yml, 0  
 1551_python-37.yml, 0  
@@ -540,39 +540,39 @@
 1558_nightly-merge.yml, 0  
 1558_website-publish.yml, 0  
 1559_website-ci.yml, 0  
-155_release.yml, 1 , 21 
+155_release.yml, 1 ,       run: sudo xcrun xcode-select -s /Applications/Xcode_11.4.app 
 1560_continuous-integration.yml, 0  
 1560_lint_python.yml, 0  
 1560_re-run-pull-request-github-actions.yml, 0  
 1560_stale.yml, 0  
 1561_ci.yml, 0  
 1561_dockerpublish.yml, 0  
-1561_test-pull-request.yml, 23 , 37, 38, 39, 50, 51, 81, 82, 83, 96, 97, 127, 128, 129, 138, 139, 166, 167, 168, 179, 180, 207, 208, 209 
+1561_test-pull-request.yml, 23 ,           sudo fallocate -l 12G /mnt/swapfile,           sudo mkswap /mnt/swapfile,           sudo swapon /mnt/swapfile,           sudo mv zkp/code/gm17/ft-batch-transfer /dev/ft-batch-transfer,           sudo ln -s /dev/ft-batch-transfer zkp/code/gm17/ft-batch-transfer,           sudo fallocate -l 13G /mnt/swapfile,           sudo mkswap /mnt/swapfile,           sudo swapon /mnt/swapfile,           sudo mv zkp/code/gm17/ft-batch-transfer /dev/ft-batch-transfer,           sudo ln -s /dev/ft-batch-transfer zkp/code/gm17/ft-batch-transfer,           sudo fallocate -l 12G /mnt/swapfile,           sudo mkswap /mnt/swapfile,           sudo swapon /mnt/swapfile,           sudo mv zkp/code/gm17/ft-batch-transfer /dev/ft-batch-transfer,           sudo ln -s /dev/ft-batch-transfer zkp/code/gm17/ft-batch-transfer,           sudo fallocate -l 13G /mnt/swapfile,           sudo mkswap /mnt/swapfile,           sudo swapon /mnt/swapfile,           sudo mv zkp/code/gm17/ft-batch-transfer /dev/ft-batch-transfer,           sudo ln -s /dev/ft-batch-transfer zkp/code/gm17/ft-batch-transfer,           sudo fallocate -l 13G /mnt/swapfile,           sudo mkswap /mnt/swapfile,           sudo swapon /mnt/swapfile 
 1562_elixir.yml, 0  
 1563_build.yml, 0  
-1563_buildx.yml, 2 , 56, 119 
+1563_buildx.yml, 2 ,           path: /tmp/.buildx-cache,           path: /tmp/.buildx-cache 
 1565_test.yml, 0  
 1566_integration.yml, 0  
 1567_main.yml, 0  
 1568_blank.yml, 0  
-1569_pypipublish_linux.yml, 1 , 32 
+1569_pypipublish_linux.yml, 1 ,           dpkg -s g++ &> /dev/null 
 156_publish.yml, 0  
 156_test.yml, 0  
-1570_ci-build.yml, 5 , 63, 65, 67, 70, 71 
-1570_update-docker-image.yml, 1 , 48 
+1570_ci-build.yml, 5 ,       run: docker exec build /bin/bash -c "mkdir -p /build/dist-pkg && cd /build && cmake /source",       run: docker exec build /bin/bash -c "cd /build && cmake --build .",       run: docker exec build /bin/bash -c "cd /build && cmake --build . --target dist-package",         docker exec build /bin/bash -c "cd /build && ./projecteur --version",         docker exec build /bin/bash -c "cd /build && ./projecteur -f" 
+1570_update-docker-image.yml, 1 , #           docker run ${{steps.build_name.outputs.image_name}}:latest /bin/bash -c  "pipenv install --dev && pipenv run pytest ./tests" 
 1571_style_check.yml, 0  
 1572_build.yml, 0  
 1572_pypipublish_osx.yml, 0  
-1573_jekyll.yml, 1 , 16 
+1573_jekyll.yml, 1 ,         jekyll/builder:latest /bin/bash -c "chmod 777 /srv/jekyll && jekyll build --future" 
 1573_tests.yml, 0  
 1574_check.yml, 0  
 1575_build.yml, 0  
-1575_E2E.yml, 12 , 21, 22, 23, 24, 28, 29, 30, 31, 36, 37, 45, 54 
+1575_E2E.yml, 12 ,                 -v /home/ubuntu/.cache/yarn/v6:/tmp/.yarn-cache-1000/v6,                 -v /home/ubuntu/.cache/alice_home:/tmp/alice_home,                 -v /home/ubuntu/.cache/bob_home:/tmp/bob_home,                 -v /home/ubuntu/.e2e/e2e-test:/tmp/e2e-test",             #     - /home/ubuntu/.cache/yarn/v6:/tmp/.yarn-cache-1000/v6,             #     - /home/ubuntu/.cache/alice_home:/tmp/alice_home,             #     - /home/ubuntu/.cache/bob_home:/tmp/bob_home,             #     - /home/ubuntu/.e2e/e2e-test:/tmp/e2e-test,             #       ls /tmp/alice_home,             #       ls /tmp/bob_home,                   yarn config set cache-folder /tmp/.yarn-cache-1000/v6,                   cp /tmp/e2e-test ./.env/e2e-test 
 1576_build.yml, 0  
-1577_workflow.yml, 5 , 4, 18, 25, 32, 52 
+1577_workflow.yml, 5 , # events but only for the master / released branch,             options: --user 1000 -v /home/ubuntu/.cache/yarn/v6:/tmp/.yarn-cache-1000/v6 # $(id -u ubuntu),                   yarn config set cache-folder /tmp/.yarn-cache-1000/v6,             options: --user 1000 -v /home/ubuntu/.cache/yarn/v6:/tmp/.yarn-cache-1000/v6,             options: --user 1000 -v /home/ubuntu/.cache/yarn/v6:/tmp/.yarn-cache-1000/v6 
 1578_fable.yml, 0  
 1579_mac.yml, 0  
-157_integrate.yml, 4 , 25, 31, 144, 148 
+157_integrate.yml, 4 ,           curl -f "$GET_LAST_VALIDATED_COMMIT_HASH_URL" -o /home/runner/last-validated-commit-hash || :,           path: /home/runner/last-validated-commit-hash,           path: /home/runner,           LAST_VALIDATED_COMMIT_HASH=`cat /home/runner/last-validated-commit-hash` || : 
 1580_linux.yml, 0  
 1581_build-canary.yml, 0  
 1581_windows.yml, 0  
@@ -584,7 +584,7 @@
 1584_pkgdown.yml, 0  
 1584_stale.yml, 0  
 1585_main.yml, 0  
-1587_release.yml, 4 , 67, 68, 69, 70 
+1587_release.yml, 4 ,           curl -Ls https://api.github.com/repos/nextdns/nextdns/tarball/$TAG | tar -xz --no-same-permissions -C /tmp,           mv /tmp/*nextdns* /tmp/nextdns-$VERSION,           XZ_OPT=-7e tar --numeric-owner --owner=0 --group=0 --sort=name --mtime=$MTIME -J -C /tmp  -cf /tmp/nextdns-$VERSION.tar.xz nextdns-$VERSION ,           export OPENWRT_HASH=$(sha256sum /tmp/nextdns-$VERSION.tar.xz | awk '{print $1}') 
 1588_cd-docker-ui-preview.yml, 0  
 1588_flake8_lint.yml, 0  
 1589_ci_master.yml, 0  
@@ -627,7 +627,7 @@
 1607_tests.yml, 0  
 1608_licenses.yml, 0  
 1609_security.yml, 0  
-1615_internal-testsuite.yml, 3 , 23, 27, 74 
+1615_internal-testsuite.yml, 3 ,     # Working dir is /home/runner/work/c2rust/c2rust,     # Working dir is /home/runner/work/c2rust/c2rust/testsuite,     # Working dir is /home/runner/work/c2rust/c2rust 
 1619_ci.yml, 0  
 161_binaries.yml, 0  
 1620_release.yml, 0  
@@ -637,17 +637,17 @@
 1623_stale.yml, 0  
 1624_test.yml, 0  
 1625_test.yml, 0  
-1626_main.yml, 1 , 17 
+1626_main.yml, 1 ,     - run: sudo chown -R cirrus:cirrus ./ /github/home/ 
 162_dgit-push.yml, 0  
 1630_main.yml, 0  
 1633_CompatHelper.yml, 0  
-1634_check-pr.yml, 1 , 71 
+1634_check-pr.yml, 1 ,         --workdir /workspaces/terraform-provider-azuredevops \ 
 1635_ci.yml, 0  
 1635_TagBot.yml, 0  
-1637_main.yml, 2 , 42, 43 
+1637_main.yml, 2 ,         /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile \,               --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset 
 1638_build.yml, 0  
 1638_deploy.yml, 0  
-163_homebrew.yml, 1 , 58 
+163_homebrew.yml, 1 ,           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" 
 1642_audit.yml, 0  
 1643_unit-tests.yml, 0  
 1644_artifact-tests.yml, 0  
@@ -659,7 +659,7 @@
 1646_deploy.yml, 0  
 1646_lint.yml, 0  
 1647_ci.yml, 0  
-1647_post-commit.yml, 11 , 44, 47, 164, 166, 167, 168, 178, 182, 183, 193, 211 
+1647_post-commit.yml, 11 ,           cd /tmp,           sudo ./install.sh /usr/local,       - name: checkout to /mnt/ozone,           sudo chmod 777 /mnt,           git clone 'https://github.com/${{ github.repository }}.git' /mnt/ozone,           cd /mnt/ozone,           cd /mnt/ozone,           cd /mnt/ozone/hadoop-ozone/dist/target/ozone-* && sudo mkdir .aws && sudo chmod 777 .aws && sudo chown 1000 .aws,           cd /mnt/ozone && hadoop-ozone/dev-support/checks/acceptance.sh,           path: /mnt/ozone/target/acceptance,         - run: sudo mkdir mnt && sudo mount --bind /mnt `pwd`/mnt && sudo chmod 777 mnt 
 1647_test.yml, 0  
 164_check.yml, 0  
 1651_dotnet.yml, 0  
@@ -668,7 +668,7 @@
 1655_tests.yml, 0  
 1656_build.yml, 0  
 1656_changelog.yml, 0  
-1657_inspektor-gadget.yml, 1 , 85 
+1657_inspektor-gadget.yml, 1 ,         TESTS_DOCKER_ARGS="-e KUBECONFIG=/root/.kube/config -v /home/runner/.kube:/root/.kube -v /home/runner/work/_temp/.minikube:/home/runner/work/_temp/.minikube" \ 
 1657_publish.yml, 0  
 1658_deploy.yml, 0  
 1658_validation.yml, 0  
@@ -691,37 +691,37 @@
 1669_ci.yml, 0  
 1669_main.yml, 0  
 166_pythonpublish.yml, 0  
-1670_release.yml, 1 , 43 
+1670_release.yml, 1 ,                     echo "Asset: '$ASSET_FILENAME' / '$ASSET_FILENAME_ENCODED' / ($ASSET_PATH)" 
 1671_ci.yml, 0  
 1671_main.yml, 0  
 1672_compressed-size.yml, 0  
 1672_workflow.yml, 0  
 1673_ci.yml, 0  
 1673_npm-snapshot-release.yml, 0  
-1674_main.yml, 7 , 45, 108, 109, 120, 125, 126, 129 
+1674_main.yml, 7 ,       SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk,           sudo installer -package clang-7.0.0.pkg -target /,           mkdir -p ~/.R && echo -e 'CC=ccache /usr/local/clang7/bin/clang\nCXX=ccache /usr/local/clang7/bin/clang++\nCXX11=ccache /usr/local/clang7/bin/clang++\nCXX14=ccache /usr/local/clang7/bin/clang++\nCXX17=ccache /usr/local/clang7/bin/clang++\nF77=ccache gfortran/nCFLAGS=-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk\nCXXFLAGS=-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk\nCCFLAGS=-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk\nCPPFLAGS=-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk' > $HOME/.R/Makevars,           sudo mv MacOSX10.13.sdk /Library/Developer/CommandLineTools/SDKs/,           sudo installer -package /Volumes/gfortran*/gfortran*/gfortran*.pkg -target /,           sudo hdiutil detach /Volumes/gfortran-8.2-Mojave,           mkdir -p ~/.R && echo -e 'CC=ccache clang\nCPP=ccache clang\nCXX=ccache clang++\nCXX11=ccache clang++\nCXX14=ccache clang++\nCXX17=ccache clang++\nCFLAGS=-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk\nCCFLAGS=-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk\nCXXFLAGS=-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk\nCPPFLAGS=-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk\nF77=ccache /usr/local/gfortran/bin/gfortran\nFC=ccache /usr/local/gfortran/bin/gfortran' > $HOME/.R/Makevars 
 1674_nodejs.yml, 0  
 167_coverage.yml, 0  
-1681_master.yml, 17 , 60, 65, 98, 99, 100, 114, 144, 145, 146, 157, 165, 194, 195, 196, 210, 245, 247 
-1682_ci-branches-vnext.yml, 17 , 60, 65, 98, 99, 100, 114, 144, 145, 146, 161, 169, 198, 199, 200, 214, 249, 251 
+1681_master.yml, 17 ,           ln -s ${GITHUB_WORKSPACE} /tf/caf,             /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/launchpad -a apply \,           ln -s ${GITHUB_WORKSPACE} /tf/caf,           echo "ls /tf/caf" && ls -lsa /tf/caf,           ls -lsa /tmp,           /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/${{ matrix.landingzone }} -a apply \,           ln -s ${GITHUB_WORKSPACE} /tf/caf,           echo "ls /tf/caf" && ls -lsa /tf/caf,           ls -lsa /tmp,           /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/${{ matrix.landingzone }} -a apply \,           /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/${{ matrix.landingzone }} -a destroy \,           ln -s ${GITHUB_WORKSPACE} /tf/caf,           echo "ls /tf/caf" && ls -lsa /tf/caf,           ls -lsa /tmp,           /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/${{ matrix.landingzone }} -a destroy \,           ln -s ${GITHUB_WORKSPACE} /tf/caf,           /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/launchpad -a destroy \ 
+1682_ci-branches-vnext.yml, 17 ,           ln -s ${GITHUB_WORKSPACE} /tf/caf,             /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/launchpad -a apply \,           ln -s ${GITHUB_WORKSPACE} /tf/caf,           echo "ls /tf/caf" && ls -lsa /tf/caf,           ls -lsa /tmp,             /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/${{ matrix.landingzone }} -a apply \,           ln -s ${GITHUB_WORKSPACE} /tf/caf,           echo "ls /tf/caf" && ls -lsa /tf/caf,           ls -lsa /tmp,           /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/${{ matrix.landingzone }} -a apply \,           /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/${{ matrix.landingzone }} -a destroy \,           ln -s ${GITHUB_WORKSPACE} /tf/caf,           echo "ls /tf/caf" && ls -lsa /tf/caf,           ls -lsa /tmp,             /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/${{ matrix.landingzone }} -a destroy \,           ln -s ${GITHUB_WORKSPACE} /tf/caf,           /tf/rover/rover.sh -lz /tf/caf/caf-terraform-landingzones/landingzones/launchpad -a destroy \ 
 1683_main.yml, 0  
 1684_pr.yml, 0  
 1685_master_updater.yml, 0  
-1686_appimage.yml, 13 , 59, 113, 114, 178, 202, 210, 212, 241, 254, 255, 422, 499, 523 
-1687_mac-packaged.yml, 6 , 79, 223, 228, 229, 230, 231 
-1688_snap-release.yml, 2 , 22, 29 
-1689_issue_closer.yml, 1 , 68 
+1686_appimage.yml, 13 ,       options: --privileged --device /dev/fuse,           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 && \,           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 60 && \,           sudo cp -R openssl-cache/. /,           sudo cp -R python-cache/. /,           sudo mkdir /opt/cmake,           sudo ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake,           mv ninja /usr/local/bin,           sudo install nasm /usr/local/bin/nasm,           sudo install ndisasm /usr/local/bin/ndisasm,           sudo cp -R ffmpeg-cache/. /,           ./configure -prefix /usr/local \,           sudo cp -R qt-cache/. / 
+1687_mac-packaged.yml, 6 ,           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer,           sudo cp -R ffmpeg-cache/. /,           PKG_CONFIG_PATH: /usr/local/ffmpeg/lib/pkgconfig,           OPENALDIR: /usr/local/opt/openal-soft,           OPENSSL_ROOT_DIR: /usr/local/opt/openssl@1.1,           Qt5_DIR: /usr/local/opt/qt/lib/cmake/Qt5 
+1688_snap-release.yml, 2 ,           sudo rm -rf /etc/apt/sources.list.d/*,           sudo chown root:root / 
+1689_issue_closer.yml, 1 ,               let pattern = /[0-9]\.[0-9][0-9.]{0,}/g; 
 168_docsbuild.yml, 0  
-1690_mac.yml, 2 , 92, 349 
-1690_publish.yml, 1 , 42 
+1690_mac.yml, 2 ,           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer,           sudo cp -R ffmpeg-cache/. /usr/local/ 
+1690_publish.yml, 1 ,           npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN 
 1691_pull_request.yml, 0  
-1691_snap.yml, 2 , 66, 73 
+1691_snap.yml, 2 ,           sudo rm -rf /etc/apt/sources.list.d/*,           sudo chown root:root / 
 1692_main.yml, 0  
-1692_win.yml, 14 , 139, 171, 172, 183, 207, 225, 256, 274, 275, 297, 318, 351, 383, 394 
-1693_linux.yml, 8 , 114, 115, 158, 160, 344, 387, 467, 518 
+1692_win.yml, 14 ,           msbuild -m LzmaLib.sln /property:Configuration=Debug,           rmdir /S /Q test,           rmdir /S /Q .git,           msbuild -m zlibstat.vcxproj /property:Configuration=Debug,           msbuild -m OpenAL.vcxproj /property:Configuration=Debug,           for /D %%a in (C:\hostedtoolcache\windows\Python\2.*) do (,           msbuild -m dump_syms.vcxproj /property:Configuration=Release,           msbuild -m opus.sln /property:Configuration=Debug /property:Platform="Win32",           msbuild -m opus.sln /property:Configuration=Release /property:Platform="Win32",           rmdir /S /Q .git,           for /r %%i in (..\..\patches\qtbase_%QT%\*) do git apply %%i,           rmdir /S /Q qt_%QT%,           msbuild Telegram.sln /nologo /p:Configuration=Debug,Platform=Win32,           msbuild Telegram.sln /nologo /p:Configuration=Debug,Platform=Win32 
+1693_linux.yml, 8 ,           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 && \,           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 60 && \,           sudo mkdir /opt/cmake,           sudo ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake,           sudo cp -R ffmpeg-cache/. /,           sudo cp -R openssl-cache/. /,           sudo cp -R qt-cache/. /,           sudo cp -R breakpad-cache/. / 
 1694_tarball-release.yml, 0  
 1699_publish-to-pypi.yml, 0  
 16_greetings.yml, 0  
-1700_make-docs.yml, 1 , 28 
+1700_make-docs.yml, 1 ,         sudo sed -i 's/azure\.//' /etc/apt/sources.list # workaround for flaky pandoc install 
 1701_check-formatting.yml, 0  
 1702_run-pytest.yml, 0  
 1703_pythonapp.yml, 0  
@@ -739,9 +739,9 @@
 1714_self-push.yml, 0  
 1715_self-scheduled.yml, 0  
 171_ci.yml, 0  
-171_xcodetest.yml, 2 , 26, 29 
-1724_linux-build.yml, 3 , 82, 83, 119 
-1726_windows-build.yml, 1 , 26 
+171_xcodetest.yml, 2 ,       run: sudo xcode-select -switch /Applications/Xcode_11.4.app,       run: /usr/bin/xcodebuild -version 
+1724_linux-build.yml, 3 ,         BUILD_DIRECTORY: /home/conan/.build,         HOME: /home/conan,         HOME: /home/conan 
+1726_windows-build.yml, 1 ,         build-runtime: ["", /MT, /MD] 
 1727_rust.yml, 0  
 172_publish-site.yml, 0  
 172_testingbranch_action.yml, 0  
@@ -758,28 +758,28 @@
 174_ci.yml, 0  
 1750_test.yml, 0  
 1752_unit-tests.yml, 0  
-1753_integration-tests.yml, 8 , 20, 22, 24, 26, 28, 30, 32, 45 
-1754_integration-tests-net2.yml, 8 , 20, 22, 24, 26, 28, 30, 32, 45 
-1755_integration-tests-backwards-compatibility-net3.yml, 7 , 20, 22, 24, 26, 28, 30, 32 
+1753_integration-tests.yml, 8 ,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise/Prise.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Plugin/Prise.Plugin.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Proxy/Prise.Proxy.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.PluginBridge/Prise.PluginBridge.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.Mvc/Prise.Mvc.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery/Prise.AssemblyScanning.Discovery.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery.Nuget/Prise.AssemblyScanning.Discovery.Nuget.csproj,       - run: dotnet pack src/Tests/IntegrationTestsPlugins/PluginG/PluginG.csproj /p:nuspecfile=PluginG.nuspec -o ~/publish 
+1754_integration-tests-net2.yml, 8 ,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise/Prise.net2.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Plugin/Prise.Plugin.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Proxy/Prise.Proxy.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.PluginBridge/Prise.PluginBridge.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Mvc/Prise.Mvc.net2.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.AssemblyScanning.Discovery/Prise.AssemblyScanning.Discovery.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.AssemblyScanning.Discovery.Nuget/Prise.AssemblyScanning.Discovery.Nuget.csproj,       - run: dotnet pack src/Tests/IntegrationTestsPlugins/PluginG/PluginG.net2.csproj /p:nuspecfile=PluginG.net2.nuspec -o ~/publish 
+1755_integration-tests-backwards-compatibility-net3.yml, 7 ,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise/Prise.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Plugin/Prise.Plugin.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Proxy/Prise.Proxy.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.PluginBridge/Prise.PluginBridge.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.Mvc/Prise.Mvc.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery/Prise.AssemblyScanning.Discovery.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery.Nuget/Prise.AssemblyScanning.Discovery.Nuget.csproj 
 1756_build.yml, 0  
-1757_integration-tests-net3.yml, 8 , 20, 22, 24, 26, 28, 30, 32, 46 
+1757_integration-tests-net3.yml, 8 ,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise/Prise.net3.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Plugin/Prise.Plugin.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Proxy/Prise.Proxy.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.PluginBridge/Prise.PluginBridge.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.Mvc/Prise.Mvc.net3.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery/Prise.AssemblyScanning.Discovery.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery.Nuget/Prise.AssemblyScanning.Discovery.Nuget.csproj,       - run: dotnet pack src/Tests/IntegrationTestsPlugins/PluginG/PluginG.net3.csproj /p:nuspecfile=PluginG.net3.nuspec -o ~/publish 
 1758_build-net2.yml, 0  
-1759_integration-tests-backwards-compatibility-net2.yml, 7 , 20, 22, 24, 26, 28, 30, 32 
-175_CI.yml, 1 , 25 
+1759_integration-tests-backwards-compatibility-net2.yml, 7 ,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise/Prise.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Plugin/Prise.Plugin.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Proxy/Prise.Proxy.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.PluginBridge/Prise.PluginBridge.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.Mvc/Prise.Mvc.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery/Prise.AssemblyScanning.Discovery.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery.Nuget/Prise.AssemblyScanning.Discovery.Nuget.csproj 
+175_CI.yml, 1 ,           /usr/share/miniconda/bin/pytest tests/ 
 175_documentation.yml, 0  
 175_publish.yml, 0  
-1760_integration-tests-backwards-compatibility.yml, 7 , 20, 22, 24, 26, 28, 30, 32 
-1761_integration-tests-net2-backwards-compatibility.yml, 7 , 20, 22, 24, 26, 28, 30, 32 
+1760_integration-tests-backwards-compatibility.yml, 7 ,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise/Prise.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Plugin/Prise.Plugin.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Proxy/Prise.Proxy.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.PluginBridge/Prise.PluginBridge.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.Mvc/Prise.Mvc.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery/Prise.AssemblyScanning.Discovery.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ./dist src/Prise.AssemblyScanning.Discovery.Nuget/Prise.AssemblyScanning.Discovery.Nuget.csproj 
+1761_integration-tests-net2-backwards-compatibility.yml, 7 ,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise/Prise.net2.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Plugin/Prise.Plugin.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Proxy/Prise.Proxy.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.PluginBridge/Prise.PluginBridge.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.Mvc/Prise.Mvc.net2.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.AssemblyScanning.Discovery/Prise.AssemblyScanning.Discovery.csproj,         run: dotnet pack -c Release /p:Version=1.9.0-beta1 -o ../../dist src/Prise.AssemblyScanning.Discovery.Nuget/Prise.AssemblyScanning.Discovery.Nuget.csproj 
 1763_skunk.yml, 0  
 1764_main.yml, 0  
 176_ci.yml, 0  
-176_main.yml, 3 , 38, 52, 53 
+176_main.yml, 3 ,           architecture: x64 // (x64 or x86) - defaults to x64,           sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/* && sudo unlink winehq.key,           sudo curl -L https://github.com/electron-userland/electron-builder-binaries/releases/download/wine-2.0.3-mac-10.13/wine-home.zip > /tmp/wine-home.zip && sudo unzip /tmp/wine-home.zip -d /root/.wine && sudo unlink /tmp/wine-home.zip 
 176_Upload.yml, 0  
 177_rust.yml, 0  
-1786_tox.yml, 1 , 71 
+1786_tox.yml, 1 ,           args: /bin/bash -c "wait-for-port rabbitmq:5672 && tox" 
 178_release.yml, 0  
 1790_rustdoc.yml, 0  
-1791_ci.yml, 1 , 134 
+1791_ci.yml, 1 ,     name: Rustfmt / Clippy 
 1792_gempush.yml, 0  
 1795_Github.yml, 0  
 179_main.yml, 0  
@@ -790,7 +790,7 @@
 1808_go.yml, 0  
 1809_stale.yml, 0  
 180_check_file_location.yml, 0  
-180_main.yml, 1 , 37 
+180_main.yml, 1 ,         docker run -u root -v $GITHUB_WORKSPACE:/corgi3DS burningdaylight/mingw-arch:qt /bin/bash -ex /corgi3DS/.github/workflows/windows_build.sh 
 1811_publish-docker-latest.yml, 0  
 1812_publish-binaries.yml, 0  
 1813_publish-docker-tag.yml, 0  
@@ -816,21 +816,21 @@
 1858_build.yml, 0  
 186_ci.yml, 0  
 186_release.yml, 0  
-1872_main.yml, 3 , 36, 37, 38 
-1875_dotnet.yml, 1 , 20 
+1872_main.yml, 3 ,         rm -rf /c/hostedtoolcache/windows/Boost/1.72.0/lib/cmake/Boost-1.72.0,         mkdir -p /c/ci,         cp $GITHUB_WORKSPACE/ci/toolchain.cmake /c/ci 
+1875_dotnet.yml, 1 ,       run: msbuild ModAssistant/ModAssistant.csproj /t:Build /p:Configuration=Release 
 1879_npmpublish.yml, 0  
 187_Documentation.yml, 0  
 187_tests.yml, 0  
 1880_publish.yml, 0  
 1881_ci.yml, 0  
-1883_test_hpipm_builds.yml, 2 , 40, 44 
-1884_ccpp.yml, 2 , 31, 35 
+1883_test_hpipm_builds.yml, 2 ,         cd /usr/src/gtest/                      >/dev/null # suppress output,         sudo cp *.so /usr/lib                   >/dev/null # suppress output 
+1884_ccpp.yml, 2 ,         cd /usr/src/gtest/                      >/dev/null # suppress output,         sudo cp *.so /usr/lib                   >/dev/null # suppress output 
 188_ci.yml, 0  
 188_CompatHelper.yml, 0  
 1893_build.yml, 0  
 1894_lifecycle_management.yml, 0  
 1895_integration.yml, 0  
-1896_kind_upgrade.yml, 2 , 54, 85 
+1896_kind_upgrade.yml, 2 ,         sudo mv kind /usr/local/bin,         sudo mv kind /usr/local/bin 
 1897_build_tag.yml, 0  
 1898_go.yml, 0  
 1899_clair.yml, 0  
@@ -840,7 +840,7 @@
 18_publish.yml, 0  
 1900_upload_release_assets.yml, 0  
 1901_update_ovs_image.yml, 0  
-1902_kind.yml, 8 , 54, 85, 116, 147, 178, 209, 240, 271 
+1902_kind.yml, 8 ,         sudo mv kind /usr/local/bin,         sudo mv kind /usr/local/bin,         sudo mv kind /usr/local/bin,         sudo mv kind /usr/local/bin,         sudo mv kind /usr/local/bin,         sudo mv kind /usr/local/bin,         sudo mv kind /usr/local/bin,         sudo mv kind /usr/local/bin 
 1905_rust.yml, 0  
 1906_build.yml, 0  
 1906_pr.yml, 0  
@@ -874,7 +874,7 @@
 1929_nodejs.yml, 0  
 192_nodejs.yml, 0  
 1930_docker-publish.yml, 0  
-1930_example-env.yml, 3 , 6, 40, 41 
+1930_example-env.yml, 3 ,   # Cypress.env('environmentName') // 'staging',           # Cypress.env('host') // 'api.dev.local',           # Cypress.env('apiPort') // 4222 
 1931_example-custom-command.yml, 0  
 1932_ci.yml, 0  
 1932_main.yml, 0  
@@ -887,9 +887,9 @@
 1938_example-start-and-yarn-workspaces.yml, 0  
 193_pypi-publish.yml, 0  
 1940_ci.yml, 0  
-1940_reviewdog.yml, 2 , 7, 19 
+1940_reviewdog.yml, 2 ,     name: runner / golangci-lint,     name: runner / shellcheck 
 1942_main.yml, 0  
-1943_release.yml, 1 , 21 
+1943_release.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
 1944_build.yml, 0  
 1944_build_and_test.yml, 0  
 1945_pypi-publish.yml, 0  
@@ -897,20 +897,20 @@
 1947_test.yml, 0  
 1949_IssueResponse.yml, 0  
 194_test.yml, 0  
-1950_release.yml, 2 , 19, 27 
-1953_ci.yml, 4 , 30, 35, 43, 48 
-1954_release.yml, 3 , 35, 60, 77 
+1950_release.yml, 2 ,           cd /home/runner/work/custom-header/custom-header,           file: /home/runner/work/custom-header/custom-header/dist/custom-header.js 
+1953_ci.yml, 4 ,       run: docker run --volume /artifacts/ilc/.test_output/server:/temporary ilc:tmp bash -c "npm run test:coverage && mv .nyc_output/* /temporary",         path: /artifacts/ilc/.test_output/server/,       run: docker run --volume /artifacts/ilc/.test_output/client:/temporary ilc:tmp-test-client bash -c "npm run test:client -- --browsers ChromeHeadlessWithoutSecurity && mv .karma_output/* /temporary",         path: /artifacts/ilc/.test_output/client/ 
+1954_release.yml, 3 ,           echo ::set-output name=tag::$(echo $GITHUB_REF | cut -d / -f 3),           route: GET /repos/:repository/releases/tags/:tag_name,           route: PATCH /repos/:repository/releases/:release_id 
 1955_gradle_cipr.yml, 0  
 1956_ci.yml, 0  
 1959_release.yml, 0  
 195_ci.yml, 0  
-1960_notify-brim-merge.yml, 1 , 20 
+1960_notify-brim-merge.yml, 1 ,         # The path of the file with the complete webhook event payload. For example, /github/workflow/event.json 
 1962_greetings.yml, 0  
-196_ci.yml, 1 , 19 
+196_ci.yml, 1 ,           DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer 
 1971_ci.yml, 0  
 1974_docgen.yml, 0  
 1975_lint.yml, 0  
-1976_test.yml, 1 , 48 
+1976_test.yml, 1 ,         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" && 
 1978_main.yml, 0  
 1979_go.yml, 0  
 1979_nodejs.yml, 0  
@@ -923,7 +923,7 @@
 1985_pr.yml, 0  
 1986_auto-close-issue.yml, 0  
 1986_pr-extra.yml, 0  
-1987_build-snap.yml, 3 , 22, 23, 24 
+1987_build-snap.yml, 3 ,         sudo /snap/bin/lxd.migrate -yes,         sudo /snap/bin/lxd waitready,         sudo /snap/bin/lxd init --auto 
 1987_pr-label-branch-name.yml, 0  
 1988_build-installer.yml, 0  
 1989_check-formatting.yml, 0  
@@ -939,7 +939,7 @@
 1996_test.yml, 0  
 1997_commit-lint.yml, 0  
 1997_pr-label-file-paths.yml, 0  
-1998_publish-next.yml, 1 , 21 
+1998_publish-next.yml, 1 ,           npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN 
 1999_run-tests.yml, 0  
 199_pythonpublish.yml, 0  
 199_test.yml, 0  
@@ -954,7 +954,7 @@
 2003_ci.yml, 0  
 2004_rust.yml, 0  
 2007_linter.yml, 0  
-2008_main.yml, 3 , 29, 60, 61 
+2008_main.yml, 3 ,               sudo cp -r lib/pkgconfig/* /usr/local/lib/pkgconfig/,         echo "moving dependencies to /",         sudo cp -r $BUILDROOT/* / 
 200_release.yml, 0  
 200_tests.yml, 0  
 2010_rust-build.yml, 0  
@@ -970,49 +970,49 @@
 2026_deployToPages.yml, 0  
 202_ci.yml, 0  
 202_style.yml, 0  
-2030_pipeline.yml, 4 , 7, 35, 59, 90 
+2030_pipeline.yml, 4 ,     name: ${{ matrix.os }} / node-${{ matrix.node-version }},           UNDERS="${UNDERS// /_}",     name: ${{ matrix.os }} / node-${{ matrix.node-version }},             UNDERS="${UNDERS// /_}" 
 2033_documentation.yml, 0  
 2034_pythonpackage.yml, 0  
 2035_publish_conda.yml, 0  
 2037_main.yml, 0  
 2038_audit.yml, 0  
-2039_ci.yml, 10 , 12, 46, 61, 101, 135, 199, 211, 243, 277, 291 
+2039_ci.yml, 10 ,     name: Check / Linux,     name: Rustfmt / Linux,     name: Clippy / Linux,     name: Build / Linux,     name: Test and coverage / Linux,     name: Install / Linux,     name: Build / Windows,     name: Test / Windows,     name: Install / Windows,     name: Install / MacOS 
 203_ci-go-cover.yml, 0  
 203_schedule.yml, 0  
 2040_release.yml, 0  
 2041_ci.yml, 0  
 2042_baiduPush.yml, 0  
-2043_Build_OP_Redmi_AC2100.yml, 3 , 39, 40, 41 
-2044_Build_OP_Newifi_D2.yml, 3 , 39, 40, 41 
-2045_Build_OP_x86.yml, 3 , 39, 40, 41 
-2046_Build_OP_x86_64.yml, 3 , 39, 40, 41 
+2043_Build_OP_Redmi_AC2100.yml, 3 ,           /usr/share/dotnet \,           /etc/mysql \,           /etc/php 
+2044_Build_OP_Newifi_D2.yml, 3 ,           /usr/share/dotnet \,           /etc/mysql \,           /etc/php 
+2045_Build_OP_x86.yml, 3 ,           /usr/share/dotnet \,           /etc/mysql \,           /etc/php 
+2046_Build_OP_x86_64.yml, 3 ,           /usr/share/dotnet \,           /etc/mysql \,           /etc/php 
 2047_test.yml, 0  
 2048_epic.yml, 0  
 2049_build.yml, 0  
-204_label_api_snapshot.yml, 4 , 1, 4, 5, 36 
+204_label_api_snapshot.yml, 4 , # To debug, it's recommended you modify / use the version in the test-actions repo:, # Used to assign a label (like /snapshot/latest or /v0) to a published API, # snapshot (like /snapshot/123).,     - name: Create Label (Copy files from /snapshot/${{env.SNAPSHOT_ID}}/ to /${{env.LABEL}}/) 
 204_linters.yml, 0  
 2050_static_analysis.yml, 0  
 2052_test.yml, 0  
 2053_ci.yml, 0  
-2054_NanoPi-R1s%20H5%20OpenWrt%20Lean.yml, 6 , 39, 43, 48, 91, 92, 101 
+2054_NanoPi-R1s%20H5%20OpenWrt%20Lean.yml, 6 ,           sudo rm -rf /etc/apt/sources.list.d,           sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk         ,           sudo cp repo/repo /usr/bin/,           sed -i '/exit/i\chown -R root:root /usr/share/netdata/web' package/lean/default-settings/files/zzz-default-settings,           sed -i '/exit/i\find /etc/rc.d/ -name *docker* -delete' package/lean/default-settings/files/zzz-default-settings,           sed -i '/Load Average/i\<tr><td width="33%"><%:CPU Temperature%></td><td><%=luci.sys.exec("cut -c1-2 /sys/class/thermal/thermal_zone0/temp")%></td></tr>' feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/index.htm 
 2056_gh-pages.yml, 0  
 2058_test.yml, 0  
 205_binder_build.yml, 0  
 205_ci.yml, 0  
 2064_create-release-patch.yml, 0  
 2065_create-release-minor.yml, 0  
-2066_publish-release.yml, 1 , 55 
+2066_publish-release.yml, 1 ,           http_status_code=$(curl -LI $GET_API_URL -o /dev/null -w '%{http_code}\n' -s \ 
 2068_ci.yml, 0  
 2069_rust.yml, 0  
-206_daily_build.yml, 1 , 10 
+206_daily_build.yml, 1 ,   # So we rebuild / publish the API at 01:30 and 12:30 UTC. 
 2076_npmpublish.yml, 0  
 2077_test.yml, 0  
 2078_test.yml, 0  
 2079_git.yml, 0  
-207_ci.yml, 8 , 49, 51, 52, 53, 57, 60, 62, 65 
+207_ci.yml, 8 ,           PHP_API=$(php -i | sed -n 's/PHP API => //p'),           sudo wget -q https://github.com/staudenmeir/php-sqlite/raw/master/$SQLITE/libsqlite3.so -O /usr/lib/x86_64-linux-gnu/libsqlite3.so.0.8.6,           sudo ln -s /usr/lib/x86_64-linux-gnu/libsqlite3.so.0.8.6 /usr/lib/x86_64-linux-gnu/libsqlite3.so,           sudo wget -q https://github.com/staudenmeir/php-sqlite/raw/master/$SQLITE/${{ matrix.php }}/pdo_sqlite.so -O /usr/lib/php/$PHP_API/pdo_sqlite.so,           curl https://packages.microsoft.com/config/ubuntu/16.04/mssql-server-2017.list | sudo tee /etc/apt/sources.list.d/mssql-server-2017.list,           sudo MSSQL_SA_PASSWORD=Password! MSSQL_PID=developer /opt/mssql/bin/mssql-conf -n setup accept-eula,           curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list,           sudo /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Password! -Q "create database [test]" 
 207_update_repo_datasets.yml, 0  
 2080_ci.yml, 0  
-2081_build.yml, 5 , 74, 99, 101, 103, 124 
+2081_build.yml, 5 ,           curl -sSL $GFWLIST_EXTRAS_DOMAINS_URL | perl -ne 'print if not /^(#|\s)/' >> temp-proxy.txt,           cat temp-proxy.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > proxy-excluse-list.txt,           cat temp-direct.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > direct-excluse-list.txt,           cat temp-reject.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > reject-excluse-list.txt,           diff ./proxy-need-to-remove.txt ./proxy-list-without-redundant | awk '/^>/{print $2}' | perl -ne 'print if not /\.cn$/' > $GOPATH/src/$GEOSITE_REPO/data/proxy-list.txt 
 2082_ccpp.yml, 0  
 2084_test.yml, 0  
 2085_test.yml, 0  
@@ -1021,19 +1021,19 @@
 2088_npmpublish-nightly.yml, 0  
 208_nodejs.yml, 0  
 208_python_unit_tests.yml, 0  
-209_deploy_api.yml, 7 , 28, 81, 89, 92, 98, 102, 107 
+209_deploy_api.yml, 7 ,   # up in the final /snapshot/{id}/ URL.,     #   run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_raw_data_qa,         ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_model,       run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_zip_folder,         path: /data/api-results-${{env.SNAPSHOT_ID}}/api-results.zip,       run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_api,         cp -r /data/api-results-${{env.SNAPSHOT_ID}}/ ./tmp/data/ 
 209_merger.yml, 0  
 20_canary.yml, 0  
 20_sentry-production.yml, 0  
 2108_ruby.yml, 0  
-210_CI_test_deploy_api.yml, 9 , 1, 10, 34, 92, 95, 98, 104, 107, 112 
+210_CI_test_deploy_api.yml, 9 , # To debug, it's recommended you modify / use the version in the test-actions repo:,   # So we rebuild / publish the API at 01:30 and 16:30 UTC.,   # up in the final /snapshot/{id}/ URL.,       run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_raw_data_qa,       run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_model,       run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_zip_folder,     #     path: /data/api-results-${{env.SNAPSHOT_ID}}/api-results.zip,       run: ./covid-data-model/run.sh ./covid-data-public /data/api-results-${{env.SNAPSHOT_ID}} execute_api,         cp -r /data/api-results-${{env.SNAPSHOT_ID}}/ ./tmp/data/ 
 210_osgeo4w.yml, 0  
 210_ut.yml, 0  
 2111_run-tests.yml, 0  
 211_centos.yml, 0  
 211_pep8.yml, 0  
 211_test.yml, 0  
-212_ci.yml, 1 , 6 
+212_ci.yml, 1 ,   DEVELOPER_DIR: /Applications/Xcode_11.5.app/Contents/Developer 
 212_release.yml, 0  
 212_super-linter.yml, 0  
 213_main.yml, 0  
@@ -1046,7 +1046,7 @@
 2147_update-summary-stories.yml, 0  
 2148_format-csharp-code.yml, 0  
 2149_valid-links.yml, 0  
-214_ci.yml, 2 , 25, 56 
+214_ci.yml, 2 ,         xargs -a <(awk '! /^ *(#|$)/' ".github/workflows/apt.txt") -r -- \,         xargs -a <(awk '! /^ *(#|$)/' ".github/workflows/apt.txt") -r -- \ 
 214_continuous-integration.yml, 0  
 2150_verify-csharp-formatting.yml, 0  
 2151_update-summary-languages.yml, 0  
@@ -1054,13 +1054,13 @@
 2153_valid-files.yml, 0  
 2154_update-summary-concepts.yml, 0  
 2155_verify-code-formatting.yml, 0  
-215_gcc.yml, 1 , 30 
+215_gcc.yml, 1 ,         xargs -a <(awk '! /^ *(#|$)/' ".github/workflows/apt.txt") -r -- \ 
 215_makecode-release.yml, 0  
-2166_go.yml, 2 , 26, 27 
+2166_go.yml, 2 ,         curl -sL https://go.kubebuilder.io/dl/2.2.0/linux/amd64 | tar -xz -C /tmp/,         sudo mv /tmp/kubebuilder_2.2.0_linux_amd64 /usr/local/kubebuilder 
 216_flake8.yml, 0  
 2185_example-5.yml, 0  
 2186_example-1.yml, 0  
-2187_example-2.yml, 1 , 97 
+2187_example-2.yml, 1 ,         shell: cmd /C CALL {0} 
 2188_example-4.yml, 0  
 2189_lint.yml, 0  
 218_build.yml, 0  
@@ -1070,7 +1070,7 @@
 2193_go.yml, 0  
 21_master.yml, 0  
 21_publish-docker.yml, 0  
-2231_tests.yml, 1 , 7 
+2231_tests.yml, 1 ,     name: node ${{ matrix.node-version }} / ${{ matrix.os }} 
 2232_ci.yml, 0  
 2236_mira-build-all.yml, 0  
 2245_codeql.yml, 0  
@@ -1090,7 +1090,7 @@
 2277_ci.yml, 0  
 2292_testing-pipeline.yml, 0  
 2293_release-pipeline.yml, 0  
-2294_packaging-pipeline.yml, 1 , 41 
+2294_packaging-pipeline.yml, 1 ,           artifacts="/opt/opencue/cuebot-${BUILD_ID}-all.jar /opt/opencue/opencue-cuebot-${BUILD_ID}-1.noarch.rpm" 
 2298_ci.yml, 0  
 22_release.yml, 0  
 22_test.yml, 0  
@@ -1109,7 +1109,7 @@
 239_tests.yml, 0  
 239_website.yml, 0  
 23_lint.yml, 0  
-23_pipeline.yml, 1 , 39 
+23_pipeline.yml, 1 ,       - name: '>> test & publish adapter / ${{ matrix.adapter }} <<' 
 240_buildtest.yml, 0  
 2423_mkdocs.yml, 0  
 2424_CI.yml, 0  
@@ -1136,20 +1136,20 @@
 24_shiftleft-analysis.yml, 0  
 251_main.yml, 0  
 252_release.yml, 0  
-253_delivery-archlinux.yml, 1 , 1 
+253_delivery-archlinux.yml, 1 , name: delivery / archlinux 
 253_dockerhub-push.yml, 0  
 254_blazorise-ci-basic.yml, 0  
 254_dockerimage.yml, 0  
 255_main.yml, 0  
 256_docker-publish.yml, 0  
-257_delivery-homebrew.yml, 1 , 1 
+257_delivery-homebrew.yml, 1 , name: delivery / homebrew 
 257_nodejs.yml, 0  
-259_delivery-release-dispatch.yml, 1 , 1 
+259_delivery-release-dispatch.yml, 1 , name: delivery / release-dispatch 
 259_presubmit.yml, 0  
 25_codeql-analysis.yml, 0  
 25_docs.yml, 0  
 260_ci.yml, 0  
-260_delivery-docker.yml, 1 , 1 
+260_delivery-docker.yml, 1 , name: delivery / docker 
 262_style.yml, 0  
 263_gradle-wrapper-validation.yml, 0  
 263_windows.yml, 0  
@@ -1160,12 +1160,12 @@
 267_ci.yml, 0  
 267_install.yml, 0  
 268_android.yml, 0  
-268_build.yml, 1 , 193 
-268_publishMavenJar.yml, 1 , 19 
-269_backend.yml, 1 , 30 
-269_ci.yml, 1 , 27 
+268_build.yml, 1 ,             (export GH=buildpacks/pack; export LATEST=$(curl -s https://api.github.com/repos/$GH/releases/latest | grep -o -E "https://.+?-linux.tgz"); echo "$LATEST"; curl -sSL "$LATEST" | sudo tar -C /usr/local/bin/ --no-same-owner -xzv $(basename $GH)) 
+268_publishMavenJar.yml, 1 ,           sudo /etc/init.d/mysql start 
+269_backend.yml, 1 ,         sudo /etc/init.d/mysql start 
+269_ci.yml, 1 ,            cd /usr/local/bin 
 269_compatibility.yml, 0  
-269_run-tests.yml, 1 , 40 
+269_run-tests.yml, 1 ,           sudo /etc/init.d/mysql start 
 26_go.yml, 0  
 26_test.yml, 0  
 270_agent.yml, 0  
@@ -1178,10 +1178,10 @@
 272_stale.yml, 0  
 273_build.yml, 0  
 273_lint.yml, 0  
-273_sql.yml, 1 , 26 
+273_sql.yml, 1 ,         sudo /etc/init.d/mysql start 
 274_check_query_files.yml, 0  
 274_publish.yml, 0  
-274_release.yml, 1 , 66 
+274_release.yml, 1 ,           sudo /etc/init.d/mysql start 
 275_android.yml, 0  
 275_python-app.yml, 0  
 276_appcenter_prod.yml, 0  
@@ -1192,23 +1192,23 @@
 279_docker-publish.yml, 0  
 27_ci.yml, 0  
 27_tests.yml, 0  
-280_delivery-archlinux-git.yml, 1 , 1 
+280_delivery-archlinux-git.yml, 1 , name: delivery / archlinux / git 
 280_test.yml, 0  
 281_api-docs.yml, 0  
 281_generate-json.yml, 0  
 281_release-merge.yml, 0  
-282_build.yml, 2 , 16, 18 
+282_build.yml, 2 ,         run: sudo xcode-select -s /Applications/Xcode_11.5.app,         run: bazelisk build --subcommands //examples/ios/PureSwift:PureSwiftFramework //examples/ios/PureObjC:PureObjCFramework //examples/ios/Mixed:MixedFramework //examples/ios/App 
 282_workflow.yml, 0  
-285_delivery-chocolatey.yml, 1 , 1 
+285_delivery-chocolatey.yml, 1 , name: delivery / chocolatey 
 286_publish-gh-pages.yml, 0  
 286_publish.yml, 0  
 287_build.yml, 0  
 287_stale.yml, 0  
-288_ci.yml, 2 , 50, 51 
+288_ci.yml, 2 ,       LLVM_CONFIG_PATH: /usr/local/opt/llvm/bin/llvm-config,       NDK_HOME: /usr/local/lib/android/sdk/ndk-bundle 
 288_infrastructure.yml, 0  
 289_deployfunctions.yml, 0  
 28_codeql.yml, 0  
-28_main.yml, 2 , 126, 127 
+28_main.yml, 2 ,         mkdir /tmp/protoc,         cd /tmp/protoc 
 28_python-publish.yml, 0  
 290_deploy.yml, 0  
 291_test.yml, 0  
@@ -1216,21 +1216,21 @@
 293_deploy.yml, 0  
 294_setup-terraform.yml, 0  
 295_continuous-integration.yml, 0  
-296_swiftformat.yml, 2 , 27, 35 
+296_swiftformat.yml, 2 ,               sudo cp -f .build/release/swiftformat /usr/local/bin/swiftformat,             sudo cp -f .build/release/swiftformat /usr/local/bin/swiftformat 
 298_release.yml, 0  
 299_ci.yml, 0  
 2_gh-pages-workflow.yml, 0  
 2_sqlx.yml, 0  
-300_pod_lib_lint.yml, 1 , 25 
+300_pod_lib_lint.yml, 1 ,       DEVELOPER_DIR: /Applications/Xcode_11.5.app 
 301_ghpages.yml, 0  
-301_SwiftPM.yml, 1 , 10 
+301_SwiftPM.yml, 1 ,   DEVELOPER_DIR: /Applications/Xcode_11.5.app/Contents/Developer 
 302_check-crates.yml, 0  
 302_jazzy.yml, 0  
 303_gradle-wrapper-validation.yml, 0  
 303_swiftlint.yml, 0  
 304_ci.yml, 0  
-304_swiftlint_analyze.yml, 1 , 26 
-305_xcodebuild.yml, 1 , 34 
+304_swiftlint_analyze.yml, 1 ,       DEVELOPER_DIR: /Applications/Xcode_11.5.app 
+305_xcodebuild.yml, 1 ,       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode.version }}.app 
 306_ci_cortex_m0.yml, 0  
 306_publish_on_tag.yml, 0  
 307_bot_stale.yml, 0  
@@ -1242,7 +1242,7 @@
 30_apply-howto-branches.yml, 0  
 310_ci_cortex_m4.yml, 0  
 310_test.yml, 0  
-311_build.yml, 1 , 92 
+311_build.yml, 1 ,              cp nasm-2.14.02/nasm.exe /usr/bin/nasm.exe 
 312_windows.yml, 0  
 313_ubuntu.yml, 0  
 314_macos.yml, 0  
@@ -1254,7 +1254,7 @@
 319_dotnetcore.yml, 0  
 31_continuous-integration.yml, 0  
 31_pythonpublish.yml, 0  
-320_build.yml, 1 , 35 
+320_build.yml, 1 ,     #  run: rsync -av --delete public/ /var/www/html/${GITHUB_REF##*/} 
 321_ci.yml, 0  
 322_testing.yml, 0  
 322_update-readme.yml, 0  
@@ -1266,7 +1266,7 @@
 325_interrogate_docs.yml, 0  
 326_release.yml, 0  
 327_ci.yml, 0  
-328_main.yml, 1 , 22 
+328_main.yml, 1 ,         cd /home/runner/ 
 328_run-tests.yml, 0  
 329_php-cs-fixer.yml, 0  
 32_build.yml, 0  
@@ -1275,10 +1275,10 @@
 331_laravel-git-clone.yml, 0  
 335_main.yml, 0  
 336_build.yml, 0  
-338_cron_deploy_pressure_test.yml, 3 , 15, 48, 51 
-338_semantic_release.yml, 5 , 18, 22, 29, 50, 63 
+338_cron_deploy_pressure_test.yml, 3 ,          run: bash /opt/statistics_tps.sh,       run: bash /opt/deploy_platon.sh,       run: bash /opt/deploy_transfer.sh 
+338_semantic_release.yml, 5 ,           docker run -v /tmp/lokalise:/opt/dest lokalise/lokalise-cli-2 lokalise2 \,           --unzip-to /opt/dest \,           cp /tmp/lokalise/locale/* /home/runner/work/alexa_media_player/alexa_media_player/custom_components/alexa_media/.translations/,           cd /home/runner/work/alexa_media_player/alexa_media_player/custom_components/alexa_media,           file: /home/runner/work/alexa_media_player/alexa_media_player/custom_components/alexa_media/alexa_media.zip 
 339_ci.yml, 0  
-339_test.yml, 2 , 28, 33 
+339_test.yml, 2 ,         docker run -v /tmp/lokalise:/opt/dest lokalise/lokalise-cli-2 lokalise2 --token "${{ secrets.lokalise_token }}" --project-id 465185555eee18dd537ca6.39714580 file download --format json --unzip-to /opt/dest --original-filenames=false --export-sort a_z --placeholder-format icu,         ls /tmp/lokalise/locale 
 33_ci.yml, 0  
 340_build.yml, 0  
 340_markdownlint.yml, 0  
@@ -1289,14 +1289,14 @@
 342_node.js.yml, 0  
 343_build.yml, 0  
 344_dart.yml, 0  
-345_c-cpp.yml, 1 , 49 
+345_c-cpp.yml, 1 ,           path: /tmp/ccache 
 350_ci.yml, 0  
-351_test.yml, 4 , 40, 56, 64, 67 
+351_test.yml, 4 ,           docker rm -f ${{ steps.prepare.outputs.container_name }} > /dev/null 2>&1 || true,               docker rm -f ${{ steps.prepare.outputs.container_name }} > /dev/null 2>&1 || true,             docker rm -f ${{ steps.prepare.outputs.container_name }} > /dev/null 2>&1 || true,           docker rm -f ${{ steps.prepare.outputs.container_name }} > /dev/null 2>&1 || true 
 352_labels.yml, 0  
 353_build.yml, 0  
 355_android.yml, 0  
 35_build-plugin.yml, 0  
-361_linux.yml, 4 , 31, 32, 33, 34 
+361_linux.yml, 4 ,         sudo rm /etc/apt/sources.list.d/*,         sudo echo "deb http://archive.ubuntu.com/ubuntu bionic main multiverse restricted universe" | sudo tee /etc/apt/sources.list,         sudo echo "deb http://archive.ubuntu.com/ubuntu bionic-security main multiverse restricted universe" | sudo tee -a /etc/apt/sources.list,         sudo echo "deb http://archive.ubuntu.com/ubuntu bionic-updates main multiverse restricted universe " | sudo tee -a /etc/apt/sources.list 
 362_osx.yml, 0  
 363_win.yml, 0  
 364_stale.yml, 0  
@@ -1307,7 +1307,7 @@
 371_release.yml, 0  
 372_go.yml, 0  
 374_ci.yml, 0  
-375_continuous.yml, 1 , 17 
+375_continuous.yml, 1 ,   # Linux / macOS 
 375_nodejs.yml, 0  
 376_clojure.yml, 0  
 376_maven.yml, 0  
@@ -1319,7 +1319,7 @@
 37_build.yml, 0  
 37_crossterm_test.yml, 0  
 380_browsers.yml, 0  
-383_ci.yml, 1 , 74 
+383_ci.yml, 1 ,           args: docker run -v /home/runner/work/defund12.org/defund12.org/_emails:/email_markdown_files markdown-tests:latest 
 384_run-tests.yml, 0  
 385_php-cs-fixer.yml, 0  
 386_psalm.yml, 0  
@@ -1345,7 +1345,7 @@
 3_publish.yml, 0  
 400_cargo-test.yml, 0  
 400_ci.yml, 0  
-400_md-link-check.yml, 1 , 28 
+400_md-link-check.yml, 1 ,         cat log | awk -v RS="FILE:" 'match($0, /(\S*\.md).*\[✖\].*(\d*\slinks\schecked\.)(.*)/, arr ) { print "FILE:"arr[1] arr[3] > "brokenlinks"}' 
 401_main.yml, 0  
 401_yarn-lint.yml, 0  
 402_build.yml, 0  
@@ -1353,7 +1353,7 @@
 403_pull_request.yml, 0  
 40_test.yml, 0  
 414_ci.yml, 0  
-416_build-nugets.yml, 5 , 30, 32, 34, 36, 38 
+416_build-nugets.yml, 5 ,       run: msbuild /t:Restore /p:Configuration=Release CLanguage.sln,       run: msbuild /p:Configuration=Release CLanguage/CLanguage.csproj,       run: msbuild /p:Configuration=Release CLanguageTests/CLanguageTests.csproj,       run: msbuild /p:Configuration=Release Editor/Mac/CLanguage.Editor.Mac.csproj,       run: msbuild /p:Configuration=Release Editor/iOS/CLanguage.Editor.iOS.csproj 
 417_pythontests.yml, 0  
 41_main.yml, 0  
 41_release.yml, 0  
@@ -1367,11 +1367,11 @@
 435_doctests.yml, 0  
 435_release.yml, 0  
 436_fmt.yml, 0  
-437_deploy_beta.yml, 2 , 30, 31 
+437_deploy_beta.yml, 2 ,           FLUTTER_PATH: /Users/adapps/flutter,           ANDROID_SDK_PATH: /Users/adapps/Library/Android/Sdk 
 437_run-tests.yml, 0  
-438_ci.yml, 2 , 30, 31 
-439_deploy_release.yml, 2 , 30, 31 
-440_go.yml, 4 , 37, 40, 44, 45 
+438_ci.yml, 2 ,           FLUTTER_PATH: /Users/adapps/flutter,           ANDROID_SDK_PATH: /Users/adapps/Library/Android/Sdk 
+439_deploy_release.yml, 2 ,           FLUTTER_PATH: /Users/adapps/flutter,           ANDROID_SDK_PATH: /Users/adapps/Library/Android/Sdk 
+440_go.yml, 4 ,         sudo rm /usr/local/bin/docker-compose,         sudo mv docker-compose /usr/local/bin,         sudo mv bin/protoc /usr/local/bin,         sudo mv include /usr/local/bin 
 441_build.yml, 0  
 442_build_mac.yml, 0  
 442_ci.yml, 0  
@@ -1382,12 +1382,12 @@
 446_push.yml, 0  
 448_build.yml, 0  
 449_publish.yml, 0  
-44_test.yml, 1 , 71 
+44_test.yml, 1 ,         docker run -v $(pwd):/t -w /t test 
 450_auto_tags.yml, 0  
-451_lint.yml, 3 , 9, 20, 23 
+451_lint.yml, 3 ,     name: Core / Lint,           tool_name: Core / Lint report,     name: UI / Lint 
 452_docs.yml, 0  
-453_continuous-integration.yml, 6 , 21, 52, 96, 100, 105, 109 
-454_continuous-delivery.yml, 8 , 13, 29, 33, 38, 45, 59, 95, 96 
+453_continuous-integration.yml, 6 ,     name: Core / Test,     name: UI / Test,       - name: ui / install,       - name: core / install,       - name: ui / build,       - name: core / build 
+454_continuous-delivery.yml, 8 ,     name: Build / Demo,       - name: ui / install,       - name: core / install,       - name: ui / build,       - name: core / build,     name: Deploy / Demo,             mv -f /tmp/monitoror-linux-amd64-${{ steps.init.outputs.VERSION }}-faker /opt/monitoror/monitoror-linux-amd64-faker,             chmod +x /opt/monitoror/monitoror-linux-amd64-faker 
 455_lint.yml, 0  
 456_rebase.yml, 0  
 457_test.yml, 0  
@@ -1405,7 +1405,7 @@
 46_deploy.yml, 0  
 470_build.yml, 0  
 473_ci.yml, 0  
-474_dotnetcore.yml, 1 , 39 
+474_dotnetcore.yml, 1 ,       run: dotnet test ./NetFabric.Hyperlinq.UnitTests/NetFabric.Hyperlinq.UnitTests.csproj -f:netcoreapp3.1 -p:CollectCoverage=true -p:CoverletOutputFormat=lcov -p:CoverletOutput=TestResults/ /p:ExcludeByAttribute="GeneratedCodeAttribute" /p:ExcludeByFile="../NetFabric.Hyperlinq.Interfaces/*.cs" 
 477_deploy-to-gh-pages.yml, 0  
 47_upload-release-assets.yml, 0  
 490_main.yml, 0  
@@ -1422,10 +1422,10 @@
 4_hostloc.yml, 0  
 4_issue-manager.yml, 0  
 500_docker-image-php-fpm.yml, 0  
-505_autobuild.yml, 1 , 54 
+505_autobuild.yml, 1 ,       run: C:\tools\msys64\usr\bin\bash -lc "cd /d/a/NooDS/NooDS && export PATH=$PATH:/mingw64/bin && make -j$(nproc) && strip noods.exe" 
 508_go.yml, 0  
 509_go.yml, 0  
-50_release_sdk.yml, 1 , 27 
+50_release_sdk.yml, 1 ,           gpg2 --import --batch secret.key &> /dev/null 
 510_linting_check.yml, 0  
 511_tests.yml, 0  
 512_autoinvite.yml, 0  
@@ -1433,15 +1433,15 @@
 514_stale.yml, 0  
 516_winpython.yml, 0  
 517_pythonapp.yml, 0  
-518_release.yml, 2 , 70, 71 
-519_continuous.yml, 2 , 60, 61 
+518_release.yml, 2 ,         cp -L /usr/lib/x86_64-linux-gnu/libxkbcommon* AppDir/usr/lib/.,         cp -L /usr/lib/x86_64-linux-gnu/libxcb-xkb.so.1 AppDir/usr/lib/. 
+519_continuous.yml, 2 ,         cp -L /usr/lib/x86_64-linux-gnu/libxkbcommon* AppDir/usr/lib/.,         cp -L /usr/lib/x86_64-linux-gnu/libxcb-xkb.so.1 AppDir/usr/lib/. 
 521_label.yml, 0  
 522_ci.yml, 0  
 522_deploy.yml, 0  
 523_build.yml, 0  
 524_leaa-api.yml, 0  
 525_build-test.yml, 0  
-525_CIBuild.yml, 1 , 26 
+525_CIBuild.yml, 1 ,         msbuild /restore /t:Build XamarinFormsControls.sln /p:Configuration=Release 
 529_gh-pages.yml, 0  
 530_main.yml, 0  
 532_check.yml, 0  
@@ -1458,7 +1458,7 @@
 53_nodejs.yml, 0  
 542_android.yml, 0  
 542_main.yml, 0  
-542_reviewdog.yml, 1 , 5 
+542_reviewdog.yml, 1 ,     name: runner / golangci-lint 
 542_run-tests.yml, 0  
 543_release-drafter.yml, 0  
 544_jms-generic-action-handler.yml, 0  
@@ -1468,19 +1468,19 @@
 546_release.yml, 0  
 54_python-app-py37.yml, 0  
 551_ci.yml, 0  
-551_go.yml, 1 , 102 
+551_go.yml, 1 ,         exit=0; for pkg in $(go list ./integration/...); do go test -c $pkg && docker run --privileged --net=host -v $PWD:/usr/src:ro router7 /bin/sh -c "./$(basename $pkg).test -test.v" || exit=1; done; [ $exit = 0 ] 
 552_cd.yml, 0  
 553_build.yml, 0  
 554_pypi.yml, 0  
-555_build-qv2ray-cmake.yml, 6 , 52, 146, 147, 168, 170, 171 
+555_build-qv2ray-cmake.yml, 6 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3),           CC: /usr/bin/gcc-7,           CXX: /usr/bin/g++-7,           cp -fv /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ./usr/optional/libstdc++/,           cp -fv /lib/x86_64-linux-gnu/libgcc_s.so.1 ./usr/optional/libgcc_s/,           cp -fv /usr/lib/x86_64-linux-gnu/{libssl.so.1.1,libcrypto.so.1.1} ./usr/lib/ 
 556_aur.yml, 0  
 558_deb.yml, 0  
-559_hashfile.yml, 2 , 12, 14 
+559_hashfile.yml, 2 ,       - run: echo ::set-env name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3),       - run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}') 
 55_ci.yml, 0  
 55_python-app-py36.yml, 0  
-560_nsis.yml, 1 , 47 
+560_nsis.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
 561_build.yml, 0  
-561_pacman.yml, 1 , 32 
+561_pacman.yml, 1 ,           sed -i '/E_ROOT/d' /usr/bin/makepkg 
 562_dev.yml, 0  
 562_label-stale-issues.yml, 0  
 563_master.yml, 0  
@@ -1513,7 +1513,7 @@
 621_main.yml, 0  
 622_python-package.yml, 0  
 623_macos.yml, 0  
-624_windows.yml, 1 , 90 
+624_windows.yml, 1 ,           cmd.exe /c ci\win\publish_for_win.bat ${{ matrix.msvc-arch }} ..\build\${{ env.publish_name }} 
 625_ubuntu.yml, 0  
 626_ci.yml, 0  
 626_readme.yml, 0  
@@ -1543,7 +1543,7 @@
 657_CI.yml, 0  
 65_release.yml, 0  
 660_pull-request-workflow.yml, 0  
-663_ci.yml, 1 , 57 
+663_ci.yml, 1 ,     name: Rustfmt / Clippy 
 664_lint-pr.yml, 0  
 665_release-tauri-app.yml, 0  
 667_publish-starters.yml, 0  
@@ -1552,14 +1552,14 @@
 66_release-notes.yml, 0  
 671_go.yml, 0  
 672_nightly.yml, 0  
-673_update_teams.yml, 1 , 21 
+673_update_teams.yml, 1 ,             // console.log(context.payload) 
 674_v2-merged.yml, 0  
 675_build-website.yml, 0  
 676_builds-on-windows.yml, 0  
 677_CI.yml, 0  
 678_android.yml, 0  
 67_push.yml, 0  
-682_go.yml, 4 , 35, 96, 121, 122 
+682_go.yml, 4 ,         && sudo cp -vv ./bin/protoc /usr/local/bin/protoc,         && sudo cp -vv ./bin/protoc /usr/local/bin/protoc,         SLIVER_CC_32: /usr/local/bin/i686-w64-mingw32-gcc,         SLIVER_CC_64: /usr/local/bin/x86_64-w64-mingw32-gcc 
 68_CICD.yml, 0  
 690_linter.yml, 0  
 691_goreleaser.yml, 0  
@@ -1574,17 +1574,17 @@
 704_js.yml, 0  
 705_pr-labels.yml, 0  
 706_proto.yml, 0  
-707_go.yml, 2 , 81, 88 
-708_release-tag.yml, 1 , 139 
+707_go.yml, 2 ,         entrypoint: /usr/bin/createdb,         entrypoint: /usr/bin/createdb 
+708_release-tag.yml, 1 ,         args: release --release-notes /tmp/release-notes.md 
 709_general.yml, 0  
 710_doc.yml, 0  
 711_deploy-docs.yml, 0  
 712_issue-manager.yml, 0  
 713_release-drafter.yml, 0  
 714_ci.yml, 0  
-715_tests.yml, 2 , 40, 87 
+715_tests.yml, 2 ,           sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off,           CIBW_BEFORE_BUILD: python scripts/fetch-vendor /tmp/vendor 
 717_push.yml, 0  
-718_ci.yml, 4 , 36, 37, 39, 92 
+718_ci.yml, 4 ,           mv open-zwave /tmp,           cd /tmp/open-zwave,           sudo ldconfig /usr/local/lib /usr/local/lib64,           mv /tmp/open-zwave ./ 
 719_dockerbuild.yml, 0  
 720_nightly.yml, 0  
 722_spider_action.yml, 0  
@@ -1608,8 +1608,8 @@
 769_workflow.yml, 0  
 76_ci-android-lint.yml, 0  
 772_check-build.yml, 0  
-773_build_and_test.yml, 3 , 7, 39, 54 
-775_clang-tidy.yml, 2 , 7, 37 
+773_build_and_test.yml, 3 ,     DOCKER_WORK_DIR: /concord-bft,             echo '/cores/core.%e.%p' | sudo tee /proc/sys/kernel/core_pattern,             /bin/bash -c "mkdir build && cd build && 
+775_clang-tidy.yml, 2 ,     DOCKER_WORK_DIR: /concord-bft,             /bin/bash -c "mkdir build && cd build && 
 775_main.yml, 0  
 776_deploy.yml, 0  
 776_pythonapp.yml, 0  
@@ -1619,7 +1619,7 @@
 782_linters.yml, 0  
 783_build-windows.yml, 0  
 783_main.yml, 0  
-786_main.yml, 7 , 21, 22, 31, 32, 52, 53, 54 
+786_main.yml, 7 ,         mkdir -p /tmp/pandoc,         cd /tmp/pandoc,         mkdir -p /tmp/adodefont,         cd /tmp/adodefont,         git clone -b gh-pages https://oauth2:${{secrets.ACCESS_TOKEN}}@github.com/F0RE1GNERS/template /tmp/template,         cp template.pdf /tmp/template/,         cd /tmp/template 
 78_ci-build-debug.yml, 0  
 78_main.yml, 0  
 791_test.yml, 0  
@@ -1631,7 +1631,7 @@
 796_check.yml, 0  
 797_go.yml, 0  
 797_publish.yml, 0  
-798_build.yml, 1 , 26 
+798_build.yml, 1 ,           & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" Localizer.sln /p:Configuration=Release /p:Platform=x86 
 798_npmpublish.yml, 0  
 79_run-tests.yml, 0  
 7_release.yml, 0  
@@ -1644,15 +1644,15 @@
 805_central-sync.yml, 0  
 805_coverage.yml, 0  
 806_release-notes.yml, 0  
-806_test.yml, 1 , 21 
+806_test.yml, 1 ,         sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_${{ matrix.dart-channel }}.list > /etc/apt/sources.list.d/dart_${{ matrix.dart-channel }}.list' 
 807_gradle.yml, 0  
-808_corretto.yml, 1 , 15 
+808_corretto.yml, 1 ,       run: java -version && cat /etc/system-release 
 809_test-macos.yml, 0  
 80_nodejs.yml, 0  
 812_test-linux.yml, 0  
 818_test-asan.yml, 0  
 822_go.yml, 0  
-82_plugins.yml, 1 , 44 
+82_plugins.yml, 1 ,         kubectl exec test -- usermod -s /bin/sh games 
 836_build-tarball.yml, 0  
 845_main.yml, 0  
 850_ci.yml, 0  
@@ -1677,26 +1677,26 @@
 893_deploy.yml, 0  
 894_ci.yml, 0  
 896_build.yml, 0  
-897_npm-publish-rc.yml, 1 , 15 
-898_npm-publish-pro.yml, 1 , 14 
-899_npm-publish.yml, 1 , 14 
+897_npm-publish-rc.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
+898_npm-publish-pro.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
+899_npm-publish.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
 899_rotki_ci.yml, 0  
 8_ci.yml, 0  
 900_rebase.yml, 0  
 900_update-icons.yml, 0  
-901_npm-publish-rc-pro.yml, 1 , 15 
+901_npm-publish-rc-pro.yml, 1 ,         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3) 
 902_autotag.yml, 0  
 902_endToEndTests.yml, 0  
 902_rebase.yml, 0  
 903_testDebian.yml, 0  
 904_build.yml, 0  
 904_gatsby.yml, 0  
-905_release.yml, 1 , 33 
+905_release.yml, 1 ,         echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list 
 905_test.yml, 0  
 906_featurepeek.yml, 0  
 906_upload-to-staging.yml, 0  
 907_rebase.yml, 0  
-907_release-drafter.yml, 1 , 2 
+907_release-drafter.yml, 1 , # Configure the format of the release notes @ /.github/release-drafter.yml 
 908_pr-labeler.yml, 0  
 908_rebase.yml, 0  
 90_build.yml, 0  
@@ -1729,7 +1729,7 @@
 952_release.yml, 0  
 953_coverage.yml, 0  
 954_cpr-example-command.yml, 0  
-955_ci.yml, 1 , 107 
+955_ci.yml, 1 ,             /test repository=${{ github.event.pull_request.head.repo.full_name }} ref=${{ github.event.pull_request.head.ref }} build=true 
 956_slash-command-dispatch.yml, 0  
 957_update-dep.yml, 0  
 95_azure-static-web-apps-red-field-08a069f1e.yml, 0  
@@ -1741,7 +1741,7 @@
 964_build.yml, 0  
 965_build_windows.yml, 0  
 965_upload-pypi-source.yml, 0  
-966_build-macos.yml, 1 , 97 
+966_build-macos.yml, 1 ,       run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf 
 967_build-windows.yml, 0  
 968_release-drafter.yml, 0  
 969_release.yml, 0  
@@ -1751,7 +1751,7 @@
 970_coverage.yml, 0  
 970_generator.yml, 0  
 971_ci.yml, 0  
-973_build.yml, 2 , 11, 23 
+973_build.yml, 2 ,       DEVELOPER_DIR: /Applications/Xcode_11.4.1.app/Contents/Developer,       DEVELOPER_DIR: /Applications/Xcode_11.4.1.app/Contents/Developer 
 979_aspnetcore.yml, 0  
 97_azure-app-svc-linux-deploy.yml, 0  
 97_cla.yml, 0  
@@ -1760,7 +1760,7 @@
 986_php.yml, 0  
 98_azure-static-web-apps-victorious-stone-0284aec1e.yml, 0  
 98_force-release.yml, 0  
-992_update_jorje.yml, 2 , 16, 20 
+992_update_jorje.yml, 2 ,         run: wget -O /tmp/apex-ast-serializer.zip https://github.com/dangmai/apex-ast-serializer/releases/download/${{ github.event.client_payload.release }}/apex-ast-serializer.zip,         run: unzip /tmp/apex-ast-serializer.zip -d vendor/ 
 998_ci.yml, 0  
 99_azure-storage-deploy.yml, 0  
 99_release.yml, 0  

@@ -32,7 +32,7 @@ fs.readdir(directoryPath, function (err, files) {
            to_string = fileBuffer.toString();
            split_lines = to_string.split("\n");
            split_lines.forEach(function (line){
-               if(line.includes(" #")== true || line.includes('\n' + '#' )==true){
+               if(line.includes("# ")== true || line.includes('\n' + '#' )==true){
                    comments ++;
                }
            });

@@ -20,27 +20,38 @@ fs.readdir(directoryPath, function (err, files) {
     } 
     files.forEach(async function (file_name) {
         var n_bad_practices = 0
-        if(getPaths(file_name)==true){
+        var bad_practices = []
+        if(getAbsolutePaths(file_name, bad_practices).length>0){
             n_bad_practices++;
         }
-        if(getJobsNamesSignificance(file_name)==true){
+        //bad_practices_file.write((`${file_name}, ${bad_practices[0]} \n`))
+if(getJobsNamesSignificance(file_name, bad_practices).length>0){
             n_bad_practices++;
         }
-        if(getComments(file_name)==false){
-            n_bad_practices++;
-        }
-        if(getEnvironmentVariables(file_name)==false){
-            n_bad_practices++;
-        }
-        if(getActions(file_name)==true){
-            n_bad_practices++;
-        }
-        bad_practices_file.write((`${file_name}, ${n_bad_practices} \n`))
 
+        if(getComments(file_name, bad_practices).length>0){
+            n_bad_practices++;
+        }
+        if(getEnvironmentVariables(file_name, bad_practices).length>0){
+            n_bad_practices++;
+        }
+        if(getActions(file_name, bad_practices).length>0){
+            n_bad_practices++;
+        }
+        bad_practices_file.write((`${file_name}, ${bad_practices.length}, `))
+        bad_practices.forEach(function (bad_practice, i){
+            if(i==bad_practices.length-1){
+                bad_practices_file.write((`${bad_practice} \n`))
+            }
+            else{
+                bad_practices_file.write((`${bad_practice}, `))
+            }
+
+        })
     });
 });
 
-function getPaths(file_name){
+function getAbsolutePaths(file_name, bad_practices){
       
     try{
         var n_paths = 0
@@ -62,6 +73,7 @@ function getPaths(file_name){
         });  
         if (n_paths>0){
             abs_paths = true
+            bad_practices.push("absolute paths")
         }   
         else{
             abs_paths=false
@@ -70,7 +82,7 @@ function getPaths(file_name){
  catch(err){
      console.log(err + " " + file_name);    
  }   
- return abs_paths
+ return bad_practices
 }
 
 //converto da yaml ad array
@@ -83,7 +95,7 @@ function yaml2array(yaml){
     return result;
 }
 
-function getJobsNamesSignificance(file_name){
+function getJobsNamesSignificance(file_name, bad_practices){
 
         try{
             var file = fs.readFileSync(directory +  file_name, 'utf8')
@@ -106,6 +118,7 @@ function getJobsNamesSignificance(file_name){
                 })
                 if(n_jobs>0){
                     not_significative = true
+                    bad_practices.push("not significative job's name")
                 }
                 else {
                     not_significative = false
@@ -114,10 +127,10 @@ function getJobsNamesSignificance(file_name){
 catch(err){
     console.log(err + " " + file_name);    
 }   
-return not_significative
+return bad_practices
 }
 
-function getComments(file_name){
+function getComments(file_name, bad_practices){
       
     try{
         var n_comments = 0
@@ -127,12 +140,13 @@ function getComments(file_name){
         split_lines = to_string.split("\n");
         split_lines.forEach(function (line){
             
-            if(line.includes("#")){
+            if(line.includes("# ")== true || line.includes('\n' + '#' )==true){
                 n_comments ++;
             }
         });
         if(n_comments==0){
             comments = false
+            bad_practices.push("no comments")
         }
         else{
             comments = true
@@ -143,18 +157,19 @@ function getComments(file_name){
  catch(err){
      console.log(err + " " + file_name);    
  }   
- return comments 
+ return bad_practices
 }
 
-function getEnvironmentVariables(file_name){
+function getEnvironmentVariables(file_name, bad_practices){
     var env_var
     if(analyzeGeneralEnv==0 && analyzeJobsEnv == 0 && analyzeStepsEnv == 0){
         env_var = false
+        bad_practices.push("no env variables")
     }
     else{
         env_var = true
     }
-    return env_var
+    return bad_practices
 }
 function analyzeGeneralEnv(file_name){
       
@@ -226,7 +241,7 @@ function analyzeGeneralEnv(file_name){
  return env  
  }
 
- function getActions(file_name){
+ function getActions(file_name, bad_practices){
      var actions
       
     try{
@@ -234,6 +249,7 @@ function analyzeGeneralEnv(file_name){
      
      if(file.includes("actions/")==true){
          actions = true
+         bad_practices.push("github actions")
      }
      else{
          actions = false
@@ -242,5 +258,5 @@ function analyzeGeneralEnv(file_name){
  catch(err){
      console.log(err + " " + file_name);    
  }
- return actions      
+ return bad_practices      
 }

@@ -166,7 +166,7 @@ function getComments(file_name, bad_practices){
 
 function getEnvironmentVariables(file_name, bad_practices){
     var env_var
-    if(analyzeGeneralEnv==0 && analyzeJobsEnv == 0 && analyzeStepsEnv == 0){
+    if(analyzeGeneralEnv(file_name)==0 && analyzeJobsEnv(file_name) == 0 && analyzeStepsEnv(file_name) == 0){
         env_var = false
         bad_practices.push("no env variables")
     }

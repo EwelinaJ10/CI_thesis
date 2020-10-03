@@ -38,17 +38,21 @@ if(getJobsNamesSignificance(file_name, bad_practices).length>0){
         if(getActions(file_name, bad_practices).length>0){
             n_bad_practices++;
         }
-        bad_practices_file.write((`${file_name}, ${bad_practices.length}, `))
-        bad_practices.forEach(function (bad_practice, i){
-            if(i==bad_practices.length-1){
-                bad_practices_file.write((`${bad_practice} \n`))
-            }
+       
+        if(bad_practices.length>0){
+            bad_practices_file.write((`${file_name}, ${bad_practices.length}, `))
+            bad_practices.forEach(function (bad_practice, i){
+                if(i==bad_practices.length-1){
+                    bad_practices_file.write((`${bad_practice} \n`))
+                }
+                else{
+                    bad_practices_file.write((`${bad_practice}, `))
+                }
+            })}
             else{
-                bad_practices_file.write((`${bad_practice}, `))
+                bad_practices_file.write((`${file_name}, ${bad_practices.length} \n`))
             }
-
-        })
-    });
+        });
 });
 
 function getAbsolutePaths(file_name, bad_practices){

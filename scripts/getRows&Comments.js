@@ -2,8 +2,8 @@ const path = require('path');
 const fs = require('fs');
 
 //leggo la cartella 
-const directoryPath = path.join('/yamls/github_yamls');
-const directory = '/yamls/github_yamls/';
+const directoryPath = path.join('github_yamls');
+const directory = './github_yamls/';
 
 const number_of_rows = fs.createWriteStream('number_of_rows__and_comments_per_file.txt');
 //const use_of_actions = fs.createWriteStream('number_of_rows.txt');
@@ -32,12 +32,11 @@ fs.readdir(directoryPath, function (err, files) {
            to_string = fileBuffer.toString();
            split_lines = to_string.split("\n");
            split_lines.forEach(function (line){
-               
-               if(line.includes("#")){
+               if(line.includes(" #")== true || line.includes('\n' + '#' )==true){
                    comments ++;
                }
            });
-           number_of_rows.write((`${file_name}, ${split_lines.length-1}, ${comments} \n`))
+           number_of_rows.write((`${file_name}, ${split_lines.length-1}, ${comments}, ${(comments / (split_lines.length-1)).toPrecision(1)}  \n`))
        
            
     }                 

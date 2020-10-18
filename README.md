@@ -52,65 +52,29 @@ To require:
 ```js
 const yaml = require ("yaml");
 ```
-- __request__ - designed to be the simplest way possible to make http calls.
+- __axios__ - 
+ 
 To install: 
 ```
-npm install request
+npm install axios
 ```
 To require: 
 ```js
-const request = require ("request");
+const axios = require ("axios");
+
+- __path__ - 
+ 
+To install: 
+```
+npm install path
+```
+To require: 
+```js
+const path = require ("path");
 ```
 ## Files
-The folder contains all the .js scripts and the utilities necessary to obtain the results of the presented manuscript.
+The folder scripts contains all the .js scripts and the utilities necessary to obtain the results of the presented manuscript.
 Execution order of the scripts:
+.............
 
-1. **getRepos.js**	
-		Find names of all GitHub repositories with CI in the readme, created between 1/03/2019 and 21/04/2020 
-		(date_ranges.txt provides ranges for the "date" parameter of queries to the GitHub API in order to obtain sets of results containing less than 1000 occurrences).
-		
-		Input: date_ranges.txt
-		Output: repo_names.txt
-		
-1. **getYamls.js**
-		From a set of GitHub repositories (reading from "repo_names.txt"), extract the ones provided with yaml files, and write their paths in "yamls_paths.txt"
-		
-		Input: repo_names.txt
-		Output: yamls_paths.txt
-		
-1. **getTools.js**
-		Script that reads the paths from the "yamls_paths.txt" file,  and queries if they contain one of the most frequents tools names in the path.
-		
-		Input: yamls_paths.txt
-		Outputs: circle_occurences.txt, docker_occurences.txt, jenkins_occurences.txt, others_tools_occurences.txt
-		
-1. **getJobsAndEvents.js**
-		This script reads yaml files and counts the occurences of jobs ("jobs_numbers.txt"), their ids ("jobs_ids.txt"), and also the trigger events ("on_ids.txt")
-		
-		Input: yamls_paths.txt
-		Outputs: jobs_numbers.txt, jobs_ids.txt, on_ids.txt
-		
-1. **getTriggerEventsOccurences.js**
-		Script that reads the trigger events present in the yaml files from the "on_ids.txt" file, and then writes all the occurences of the possible events in the output files.
-	
-		Input: on_ids.txt
-		Outputs: pull_request_occurences.txt, push_occurences.txt, release_occurences.txt, issues_occurences.txt, 					others_events_occurences.txt.
-		
-1. **getJobsOccurences.js**
-		Script that reads the jobs' ids present in the yaml files from the jobs_ids.txt" file, and then writes the occurences of the most frequent names in  the output files.
-		
-		Input: jobs_ids.txt
-		Outputs: build_occurences.txt, deploy_occurences.txt, others_jobs_occurences.txt
-		
-1. **getAndroid.js**
-		Find names of all GitHub projects with Android in the name ("repos_with_android.txt"), description or readme, and using java as the main project's language.
-	
-		Input: date_ranges.txt
-		Output: repos_with_android.txt
-		
-1. **getAndroidYamls.js**
-		Find names of all GitHub projects with Android that also contain a yaml file in the project, and save their names in "repos_with_android_and_yaml.txt".
-		
-		Input: repos_with_android.txt
-		Output: repos_with_android_and_yaml.txt
-		
+

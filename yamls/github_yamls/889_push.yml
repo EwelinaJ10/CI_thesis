@@ -23,7 +23,7 @@ jobs:
     - name: Build Image
       run: docker build -t "${IMAGE}:${VERSION}" .
     - name: Push Image
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: "${{ env.IMAGE }}:${{ env.VERSION }}"
         username: ${{ secrets.DOCKER_USERNAME }}

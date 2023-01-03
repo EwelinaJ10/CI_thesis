@@ -15,7 +15,7 @@ jobs:
         id: release
       - name: Publish to Registry
         if: steps.release.outputs.is_latest == 'true'
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
           name: getmeili/meilisearch
           username: ${{ secrets.DOCKER_USERNAME }}

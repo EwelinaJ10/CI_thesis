@@ -82,7 +82,7 @@ jobs:
           echo ::set-env name=INSTALL_DEV::"true"
           echo ::set-env name=JINA_VERSION::"$(sed '6q;d' ./jina/__init__.py | cut -d \' -f2)-devel"
       - name: Upload to Docker Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
           name: jinaai/jina
           username: ${{ secrets.DOCKERHUB_DEVBOT_USER }}
@@ -91,7 +91,7 @@ jobs:
           buildargs: BUILD_DATE, VCS_REF, JINA_VERSION, INSTALL_DEV
           tags: "devel, ${{env.JINA_VERSION}}"
       - name: Upload to Github Docker Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
           name: jina-ai/jina/jina
           username: ${{ secrets.DOCKER_USERNAME }}

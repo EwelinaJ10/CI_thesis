@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Publish to Registry internal demo app
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: ${{ env.REGISTRY }}/${{ env.ACR_REPO_APP }}
         username: ${{ secrets.ESQUIO_DOCKER_USERNAME }}
@@ -25,7 +25,7 @@ jobs:
         tags: "latest,${{ env.TAG }}"
 
     - name: Publish to Registry internal demo ui
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: ${{ env.REGISTRY }}/${{ env.ACR_REPO_UI }}
         username: ${{ secrets.ESQUIO_DOCKER_USERNAME }}

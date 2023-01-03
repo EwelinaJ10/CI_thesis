@@ -28,7 +28,7 @@ jobs:
 
     - name: Build gadget container and publish to Registry
       id: publish-registry
-      uses: elgohr/Publish-Docker-Github-Action@2.8
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: ${{ secrets.CONTAINER_REPO }}
         username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
